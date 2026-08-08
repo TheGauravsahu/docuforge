@@ -1,0 +1,135 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* === DocuForge Green Light Mode === */
+    --bg-page: #F6F8F4;
+    --surface-1: #FFFFFF;
+    --surface-2: #EFF4EC;
+    --primary: #1E5B3F;
+    --primary-hover: #164A32;
+    --accent-soft: #DCEFE1;
+    --accent-dark-card: #123326;
+    --text-primary: #131614;
+    --text-secondary: #5C6B62;
+    --text-muted: #8B978F;
+    --border: #E1E8DE;
+    --danger: #C24444;
+    --warning: #C48A2E;
+
+    /* Tailwind token bridge */
+    --background: 85 15% 95%;
+    --foreground: 150 8% 8%;
+    --card: 0 0% 100%;
+    --card-foreground: 150 8% 8%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 150 8% 8%;
+    --primary-tw: 151 51% 24%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 120 20% 94%;
+    --secondary-foreground: 151 51% 18%;
+    --muted: 120 15% 93%;
+    --muted-foreground: 150 10% 40%;
+    --accent: 120 25% 87%;
+    --accent-foreground: 151 51% 18%;
+    --destructive: 0 54% 52%;
+    --destructive-foreground: 0 0% 98%;
+    --border-tw: 112 20% 87%;
+    --input: 112 20% 87%;
+    --ring: 151 51% 24%;
+    --radius: 0.75rem;
+
+    /* Sidebar tokens */
+    --sidebar-background: 120 20% 94%;
+    --sidebar-foreground: 150 8% 8%;
+    --sidebar-primary: 151 51% 24%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 120 25% 87%;
+    --sidebar-accent-foreground: 151 51% 18%;
+    --sidebar-border: 112 20% 87%;
+    --sidebar-ring: 151 51% 24%;
+  }
+
+  .dark {
+    /* === DocuForge Green Dark Mode === */
+    --bg-page: #0F1512;
+    --surface-1: #161D19;
+    --surface-2: #1D2621;
+    --primary: #4ADE80;
+    --primary-hover: #3BC76E;
+    --accent-soft: #0B3021;
+    --accent-dark-card: #0B1F17;
+    --text-primary: #EDF2EE;
+    --text-secondary: #9AAAA1;
+    --text-muted: #6B7D73;
+    --border: #26312B;
+    --danger: #E55A5A;
+    --warning: #DBA94E;
+
+    /* Tailwind token bridge */
+    --background: 145 20% 8%;
+    --foreground: 120 15% 94%;
+    --card: 145 15% 10%;
+    --card-foreground: 120 15% 94%;
+    --popover: 145 15% 9%;
+    --popover-foreground: 120 15% 94%;
+    --primary-tw: 142 71% 65%;
+    --primary-foreground: 145 20% 8%;
+    --secondary: 145 15% 13%;
+    --secondary-foreground: 120 15% 87%;
+    --muted: 145 15% 13%;
+    --muted-foreground: 145 8% 50%;
+    --accent: 145 15% 13%;
+    --accent-foreground: 120 15% 87%;
+    --destructive: 0 54% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border-tw: 145 12% 19%;
+    --input: 145 12% 19%;
+    --ring: 142 71% 65%;
+
+    /* Sidebar tokens */
+    --sidebar-background: 145 20% 7%;
+    --sidebar-foreground: 120 15% 87%;
+    --sidebar-primary: 142 71% 65%;
+    --sidebar-primary-foreground: 145 20% 8%;
+    --sidebar-accent: 145 15% 13%;
+    --sidebar-accent-foreground: 120 15% 87%;
+    --sidebar-border: 145 12% 19%;
+    --sidebar-ring: 142 71% 65%;
+  }
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  html, body {
+    font-family: 'Inter', 'Geist', -apple-system, sans-serif;
+    background-color: var(--bg-page);
+    color: var(--text-primary);
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* ===================== Custom Scrollbars ===================== */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background-color: var(--border); border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background-color: var(--text-muted); }
+
+/* ===================== Document Border Presets ===================== */
+.doc-border-double { border: 4px double var(--primary); }
+.doc-border-single { border: 2px solid var(--primary); }
+.doc-border-ornamental { border: 4px double var(--primary); outline: 1px solid var(--primary); outline-offset: 4px; }
+
+/* ===================== Landing Page Override ===================== */
+/* Landing page forces dark bg regardless of user theme */
+.landing-page-root {
+  background-color: #0B0F0D;
+  color: #EDF2EE;
+}
