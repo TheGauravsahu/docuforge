@@ -2,6 +2,16 @@ import { generateOutlineService, generateFullDocumentModelService, generateSecti
 import { db } from '../../config/db.js';
 import { documents, usageLogs } from '../../db/schema.js';
 
+const handleAiError = (res, error) => {
+  console.error('[AI Controller Error]', error.message);
+  if (error.status === 429 || error.isQuotaExceeded || error.message?.includes('Quota') || error.message?.includes('RESOURCE_EXHAUSTED')) {
+    return res.status(429).json({
+      error: 'AI quota reached. Gemini API rate limit exceeded. Please wait a few seconds and try again.'
+    });
+  }
+  return res.status(500).json({ error: error.message || 'AI Generation failed' });
+};
+
 export const writeSection = async (req, res) => {
   try {
     const { title, topic } = req.body;
@@ -11,7 +21,7 @@ export const writeSection = async (req, res) => {
     const section = await generateSectionService({ title, topic });
     res.json({ section });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    handleAiError(res, error);
   }
 };
 
@@ -25,7 +35,7 @@ export const generateOutline = async (req, res) => {
     const outline = await generateOutlineService({ topic, docType, referenceText });
     res.json({ outline });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    handleAiError(res, error);
   }
 };
 
@@ -72,6 +82,6 @@ export const generateFullDocument = async (req, res) => {
 
     res.status(201).json({ document: newDoc });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    handleAiError(res, error);
   }
 };

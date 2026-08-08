@@ -71,7 +71,12 @@ export default function GeneratePage() {
       navigate(`/editor/${doc.id}`);
     },
     onError: (err) => {
-      toast.error(err.response?.data?.error || 'Generation failed. Please try again.');
+      console.error(err);
+      if (err.response?.status === 429 || err.response?.data?.error?.includes('quota')) {
+        toast.error('AI quota reached. Please wait a few seconds and try again.');
+      } else {
+        toast.error(err.response?.data?.error || 'Generation failed. Please try again.');
+      }
     },
   });
 

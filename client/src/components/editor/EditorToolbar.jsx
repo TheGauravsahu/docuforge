@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, Undo2, Redo2, Type, Download,
-  Save, CheckCircle2, Circle, ZoomIn, ZoomOut
+  Save, CheckCircle2, Circle, ZoomIn, ZoomOut, Image as ImageIcon
 } from 'lucide-react';
 import { useEditorStore } from '../../store/useEditorStore.js';
 import { toast } from 'sonner';
@@ -25,6 +25,7 @@ const FONT_OPTIONS = [
 
 export default function EditorToolbar({
   onOpenExportModal,
+  onOpenMediaModal,
 }) {
   const navigate = useNavigate();
   const {
@@ -179,6 +180,20 @@ export default function EditorToolbar({
           <Type className="w-3.5 h-3.5" />
           Add Text
         </button>
+
+        {/* Add image */}
+        {onOpenMediaModal && (
+          <button
+            onClick={onOpenMediaModal}
+            className="flex items-center gap-1.5 px-2.5 py-1 text-[12px] font-medium rounded-lg transition-colors"
+            style={{ color: 'var(--text-secondary)' }}
+            onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'var(--surface-1)'; e.currentTarget.style.color = 'var(--text-primary)'; }}
+            onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
+          >
+            <ImageIcon className="w-3.5 h-3.5" />
+            Add Image
+          </button>
+        )}
 
         <div className="w-px h-4 mx-0.5" style={{ backgroundColor: 'var(--border)' }} />
 

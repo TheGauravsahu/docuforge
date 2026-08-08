@@ -4,7 +4,8 @@ import {
   getDocumentById,
   createDocument,
   updateDocument,
-  deleteDocument
+  deleteDocument,
+  uploadMedia
 } from './documents.controller.js';
 import { authenticate } from '../../middleware/auth.js';
 
@@ -12,6 +13,7 @@ const router = Router();
 
 router.use(authenticate);
 
+router.post('/upload-media', uploadMedia);
 router.get('/', getDocuments);
 router.get('/:id', getDocumentById);
 router.post('/', createDocument);

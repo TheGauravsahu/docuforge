@@ -31,7 +31,11 @@ export default function AiGeneratorModal({ isOpen, onClose }) {
       setStep(2);
     } catch (err) {
       console.error(err);
-      toast.error('Failed to generate outline. Please try again.');
+      if (err.response?.status === 429 || err.response?.data?.error?.includes('quota')) {
+        toast.error('AI quota reached. Please wait a few seconds and try again.');
+      } else {
+        toast.error('Failed to generate outline. Please try again.');
+      }
       setIsGenerating(false);
     }
   };
@@ -55,7 +59,11 @@ export default function AiGeneratorModal({ isOpen, onClose }) {
       navigate(`/editor/${doc.id}`);
     } catch (err) {
       console.error(err);
-      toast.error('Document generation failed.');
+      if (err.response?.status === 429 || err.response?.data?.error?.includes('quota')) {
+        toast.error('AI quota reached. Please wait a few seconds and try again.');
+      } else {
+        toast.error('Document generation failed.');
+      }
       setIsGenerating(false);
       setStep(2);
     }

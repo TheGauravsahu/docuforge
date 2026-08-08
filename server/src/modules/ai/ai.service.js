@@ -24,7 +24,13 @@ Respond ONLY with valid JSON in the following format:
       });
       return JSON.parse(response.text || '{}');
     } catch (err) {
-      console.warn('[Gemini AI] Section writer fallback triggered:', err.message);
+      console.warn('[Gemini AI] Section writer error:', err.message);
+      if (err.status === 'RESOURCE_EXHAUSTED' || err.message?.includes('Quota exceeded') || err.message?.includes('429')) {
+        const quotaErr = new Error('AI Quota Exceeded. Please wait a few seconds and try again.');
+        quotaErr.status = 429;
+        quotaErr.isQuotaExceeded = true;
+        throw quotaErr;
+      }
     }
   }
 
@@ -92,44 +98,51 @@ Respond ONLY with valid JSON in the following format:
       const responseText = response.text || '';
       return JSON.parse(responseText);
     } catch (err) {
-      console.warn('[Gemini AI] Outline fallback triggered:', err.message);
+      console.warn('[Gemini AI] Outline generation error:', err.message);
+      if (err.status === 'RESOURCE_EXHAUSTED' || err.message?.includes('Quota exceeded') || err.message?.includes('429')) {
+        const quotaErr = new Error('AI Quota Exceeded. Please wait a few seconds and try again.');
+        quotaErr.status = 429;
+        quotaErr.isQuotaExceeded = true;
+        throw quotaErr;
+      }
     }
   }
 
-  // Robust structured fallback if AI API key is not present or rate limited
+  // Robust structured topic-aware fallback if AI API key is not present or offline
+  const cleanTopic = topic ? topic.trim() : 'Academic Project Study';
   return {
-    title: topic ? topic.toUpperCase() : 'STUDY OF ELECTROMAGNETIC INDUCTION AND ITS APPLICATIONS',
-    subtitle: `A Comprehensive Theoretical, Experimental & Mathematical Analysis of ${topic || 'Electromagnetism'}`,
+    title: cleanTopic.toUpperCase(),
+    subtitle: `A Comprehensive Theoretical, Experimental & Mathematical Analysis of ${cleanTopic}`,
     chapters: [
       {
         chapterNumber: 1,
-        title: `Introduction to ${topic || 'Electromagnetism'}`,
-        subtopics: ['Background & Fundamental Principles', 'Historical Context & Faraday\'s Discoveries', 'Significance in Modern Physics & Technology']
+        title: `Introduction & Historical Context of ${cleanTopic}`,
+        subtopics: ['Background & Fundamental Principles', 'Historical Development', 'Significance in Modern Study']
       },
       {
         chapterNumber: 2,
-        title: 'Theoretical Framework & Governing Laws',
-        subtopics: ['Faraday\'s Laws of Induction', 'Lenz\'s Law & Energy Conservation', 'Mathematical Equations & Flux Derivatives']
+        title: `Theoretical Framework & Core Concepts of ${cleanTopic}`,
+        subtopics: ['Core Principles', 'Mathematical Derivations', 'Working Mechanics']
       },
       {
         chapterNumber: 3,
-        title: 'Experimental Setup & Methodology',
-        subtopics: ['Required Apparatus & Circuit Specifications', 'Schematic Diagram & Setup Instructions', 'Step-by-Step Experimental Procedure']
+        title: `Experimental Setup & Methodology for ${cleanTopic}`,
+        subtopics: ['Required Apparatus & Specifications', 'Model Description', 'Step-by-Step Procedure']
       },
       {
         chapterNumber: 4,
-        title: 'Observations & Quantitative Data Analysis',
-        subtopics: ['Tabulated Measurements & Readings', 'Calculations, Graphs & Error Analysis', 'Practical Applications in Power Generation']
+        title: `Quantitative Analysis & Findings of ${cleanTopic}`,
+        subtopics: ['Tabulated Measurements', 'Calculations & Error Analysis', 'Graphical Interpretation']
       },
       {
         chapterNumber: 5,
-        title: 'Industrial Applications & Modern Devices',
-        subtopics: ['Transformers & Power Distribution', 'Induction Motors & Generators', 'Eddy Currents & Electromagnetic Braking']
+        title: `Practical Applications & Innovations of ${cleanTopic}`,
+        subtopics: ['Modern Applications', 'Efficiency & Performance', 'Environmental Considerations']
       },
       {
         chapterNumber: 6,
-        title: 'Conclusion & References',
-        subtopics: ['Summary of Results & Key Verification', 'Precautions & Sources of Error', 'Academic Bibliography']
+        title: `Conclusion & Future Scope of ${cleanTopic}`,
+        subtopics: ['Summary of Findings', 'Sources of Error', 'Future Enhancements']
       }
     ]
   };

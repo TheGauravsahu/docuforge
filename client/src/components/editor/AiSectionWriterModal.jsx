@@ -99,7 +99,11 @@ export default function AiSectionWriterModal({ isOpen, onClose }) {
       onClose();
     } catch (err) {
       console.error(err);
-      toast.error('AI Section writing failed. Please try again.');
+      if (err.response?.status === 429 || err.response?.data?.error?.includes('quota')) {
+        toast.error('AI quota reached. Please wait a few seconds and try again.');
+      } else {
+        toast.error('AI Section writing failed. Please try again.');
+      }
       setIsGenerating(false);
     }
   };

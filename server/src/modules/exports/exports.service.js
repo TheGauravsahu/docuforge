@@ -109,12 +109,13 @@ export const exportToPdfHtml = (contentJson, docTitle) => {
   const accentColor = theme.accentColor || '#C1663E';
   const borderStyleStr = theme.borderStyle || 'double';
   const defaultFontFamily = theme.fontFamily || 'Georgia';
+  const borderColor = theme.borderColor || primaryColor;
 
-  let pageBorderCss = 'border: 4px double ' + primaryColor + ';';
+  let pageBorderCss = 'border: 4px double ' + borderColor + ';';
   if (borderStyleStr.includes('single')) {
-    pageBorderCss = 'border: 2px solid ' + primaryColor + ';';
+    pageBorderCss = 'border: 2px solid ' + borderColor + ';';
   } else if (borderStyleStr.includes('ornamental')) {
-    pageBorderCss = 'border: 4px double ' + primaryColor + '; outline: 1px solid ' + primaryColor + '; outline-offset: 4px;';
+    pageBorderCss = 'border: 4px double ' + borderColor + '; outline: 1px solid ' + borderColor + '; outline-offset: 4px;';
   } else if (borderStyleStr.includes('none')) {
     pageBorderCss = 'border: none;';
   }
@@ -161,6 +162,18 @@ export const exportToPdfHtml = (contentJson, docTitle) => {
           box-sizing: border-box;
         `;
         return `<div class="element-text" style="${style}">${el.content}</div>`;
+      } else if (el.type === 'image' && el.url) {
+        const style = `
+          position: absolute;
+          top: ${el.y || 100}px;
+          left: ${el.x || 50}px;
+          width: ${el.width || 320}px;
+          height: ${el.height || 220}px;
+          object-fit: fill;
+          border-radius: 4px;
+          box-sizing: border-box;
+        `;
+        return `<img src="${el.url}" style="${style}" alt="Inserted Media" />`;
       }
       return '';
     }).join('');

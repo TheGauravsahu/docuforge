@@ -1,6 +1,7 @@
 import { eq, and, ilike } from 'drizzle-orm';
 import { db } from '../../config/db.js';
 import { documents, templates } from '../../db/schema.js';
+import { uploadToImageKit } from '../../config/imagekit.js';
 
 export const getDocuments = async (req, res) => {
   try {
@@ -140,6 +141,29 @@ export const deleteDocument = async (req, res) => {
     }
 
     res.json({ message: 'Document deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const uploadMedia = async (req, res) => {
+  try {
+    const { imageBase64, imageUrl: urlInput, filename } = req.body;
+    
+    if (urlInput) {
+      return res.json({ url: urlInput, message: 'Image URL processed' });
+    }
+
+    if (!imageBase64) {
+      return res.status(400).json({ error: 'Image data is required' });
+    }
+
+    const mediaUrl = await uploadToImageKit({
+      file: imageBase64,
+      fileName: filename || `docuforge_${Date.now()}.png`,
+    });
+
+    res.json({ url: mediaUrl, message: 'Image uploaded successfully' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

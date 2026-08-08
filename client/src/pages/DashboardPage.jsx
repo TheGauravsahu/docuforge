@@ -302,33 +302,25 @@ export default function DashboardPage() {
 
           {/* Right rail — Generations card */}
           <div className="hidden xl:flex flex-col gap-4 w-60 flex-shrink-0">
-            {/* Dark green hero card */}
+            {/* AI Studio Hero Card */}
             <div
-              className="rounded-2xl p-5 space-y-4"
-              style={{ backgroundColor: 'var(--accent-dark-card)' }}
+              className="rounded-2xl p-5 space-y-4 shadow-sm border"
+              style={{ backgroundColor: 'var(--accent-dark-card)', borderColor: 'var(--border)' }}
             >
-              <div>
-                <p className="text-[12px] font-medium" style={{ color: 'rgba(255,255,255,0.5)' }}>Generations remaining</p>
-                <p className="text-2xl font-bold text-white mt-0.5">
-                  {stats.generationsLimit - stats.generations}
-                  <span className="text-[14px] font-normal ml-1" style={{ color: 'rgba(255,255,255,0.4)' }}>/ {stats.generationsLimit}</span>
-                </p>
+              <div className="flex items-center gap-2 text-emerald-400">
+                <Sparkles className="w-5 h-5 fill-current" />
+                <span className="text-[13px] font-bold tracking-wide">AI Document Studio</span>
               </div>
-              <div className="flex justify-center py-2">
-                <ProgressDonut
-                  value={stats.generations}
-                  max={stats.generationsLimit}
-                  size={88}
-                  strokeWidth={9}
-                  label="Used this month"
-                />
-              </div>
+              <p className="text-[13px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.7)' }}>
+                Generate complete academic investigatory reports, bonafide certificates, and slide decks in seconds.
+              </p>
               <button
-                onClick={() => navigate('/settings?tab=billing')}
-                className="w-full py-2.5 rounded-xl text-[13px] font-semibold text-center transition-opacity hover:opacity-90"
-                style={{ backgroundColor: 'var(--primary)', color: 'var(--accent-dark-card)' }}
+                onClick={() => navigate('/generate')}
+                className="w-full py-2.5 rounded-xl text-[13px] font-bold text-center flex items-center justify-center gap-2 transition-opacity hover:opacity-90 shadow-sm"
+                style={{ backgroundColor: '#4ADE80', color: '#0B1F17' }}
               >
-                Upgrade plan
+                <Wand2 className="w-4 h-4" />
+                Create AI Document
               </button>
             </div>
 

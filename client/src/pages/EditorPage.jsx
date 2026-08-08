@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import EditorToolbar from '../components/editor/EditorToolbar.jsx';
 import PageThumbnailsSidebar from '../components/editor/PageThumbnailsSidebar.jsx';
@@ -9,6 +10,7 @@ import PlaceholderFormModal from '../components/editor/PlaceholderFormModal.jsx'
 import ExportModal from '../components/editor/ExportModal.jsx';
 import AiGeneratorModal from '../components/editor/AiGeneratorModal.jsx';
 import AiSectionWriterModal from '../components/editor/AiSectionWriterModal.jsx';
+import MediaModal from '../components/editor/MediaModal.jsx';
 import { useEditorStore } from '../store/useEditorStore.js';
 import api from '../lib/api.js';
 
@@ -21,13 +23,27 @@ export default function EditorPage() {
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
   const [isAiSectionModalOpen, setIsAiSectionModalOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isMediaModalOpen, setIsMediaModalOpen] = useState(false);
+
+  const { data: docData, isLoading } = useQuery({
+    queryKey: ['document', docId],
+    queryFn: async () => {
+      const res = await api.get(`/documents/${docId}`);
+      return res.data.document;
+    },
+    enabled: !!docId,
+    staleTime: 1000 * 60 * 5,
+    onError: () => {
+      toast.error('Failed to load document. Returning to dashboard.');
+      navigate('/dashboard');
+    }
+  });
 
   useEffect(() => {
-    if (docId && (!document || document.id !== docId)) {
-      fetchDocument(docId);
+    if (docData && (!document || document.id !== docData.id)) {
+      setDocument(docData);
     }
-  }, [docId]);
+  }, [docData]);
 
   // Debounced auto-save effect
   useEffect(() => {
@@ -47,20 +63,6 @@ export default function EditorPage() {
 
     return () => clearTimeout(timer);
   }, [document, isDirty]);
-
-  const fetchDocument = async (id) => {
-    setIsLoading(true);
-    try {
-      const res = await api.get(`/documents/${id}`);
-      setDocument(res.data.document);
-    } catch (err) {
-      console.error(err);
-      toast.error('Failed to load document. Returning to dashboard.');
-      navigate('/dashboard');
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   if (isLoading || !document) {
     return (
@@ -104,6 +106,7 @@ export default function EditorPage() {
         onOpenPlaceholderModal={() => setIsPlaceholderModalOpen(true)}
         onOpenAiModal={() => setIsAiModalOpen(true)}
         onOpenAiSectionModal={() => setIsAiSectionModalOpen(true)}
+        onOpenMediaModal={() => setIsMediaModalOpen(true)}
       />
 
       {/* Main studio body */}
@@ -126,6 +129,7 @@ export default function EditorPage() {
           onOpenPlaceholderModal={() => setIsPlaceholderModalOpen(true)}
           onOpenAiModal={() => setIsAiModalOpen(true)}
           onOpenAiSectionModal={() => setIsAiSectionModalOpen(true)}
+          onOpenMediaModal={() => setIsMediaModalOpen(true)}
         />
       </div>
 
@@ -145,6 +149,10 @@ export default function EditorPage() {
       <AiSectionWriterModal
         isOpen={isAiSectionModalOpen}
         onClose={() => setIsAiSectionModalOpen(false)}
+      />
+      <MediaModal
+        isOpen={isMediaModalOpen}
+        onClose={() => setIsMediaModalOpen(false)}
       />
     </div>
   );

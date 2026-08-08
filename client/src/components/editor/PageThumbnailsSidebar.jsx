@@ -1,5 +1,5 @@
-import React from 'react';
-import { Plus, Trash2, ChevronUp, ChevronDown, FileText, Bookmark, Award, Sparkles } from 'lucide-react';
+import React, { useState } from 'react';
+import { Plus, Trash2, FileText, Bookmark, Award, Sparkles, GripVertical } from 'lucide-react';
 import { useEditorStore } from '../../store/useEditorStore.js';
 
 const PAGE_TYPE_CONFIG = {
@@ -15,9 +15,44 @@ export default function PageThumbnailsSidebar({ onOpenAiSectionWriter }) {
   const { document, activePageIndex, setActivePage, addPage, deletePage, reorderPages } = useEditorStore();
   const pages = document?.contentJson?.pages || [];
 
+  const [draggedIndex, setDraggedIndex] = useState(null);
+  const [dragOverIndex, setDragOverIndex] = useState(null);
+
+  const handleDragStart = (e, index) => {
+    e.dataTransfer.setData('text/plain', index);
+    e.dataTransfer.effectAllowed = 'move';
+    setDraggedIndex(index);
+  };
+
+  const handleDragOver = (e, index) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (dragOverIndex !== index) {
+      setDragOverIndex(index);
+    }
+  };
+
+  const handleDrop = (e, targetIndex) => {
+    e.preventDefault();
+    const sourceIndexStr = e.dataTransfer.getData('text/plain');
+    const sourceIndex = parseInt(sourceIndexStr, 10);
+
+    if (!isNaN(sourceIndex) && sourceIndex !== targetIndex) {
+      reorderPages(sourceIndex, targetIndex);
+    }
+
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
   return (
     <aside
-      className="w-56 flex flex-col h-full border-r flex-shrink-0"
+      className="w-56 flex flex-col h-full border-r flex-shrink-0 select-none"
       style={{
         backgroundColor: 'var(--surface-1)',
         borderColor: 'var(--border)',
@@ -58,38 +93,59 @@ export default function PageThumbnailsSidebar({ onOpenAiSectionWriter }) {
       </div>
 
       {/* Pages list */}
-      <div className="flex-1 overflow-y-auto p-2.5 space-y-1.5">
+      <div className="flex-1 overflow-y-auto p-2 space-y-1">
         {pages.map((page, idx) => {
           const isActive = idx === activePageIndex;
+          const isDragging = idx === draggedIndex;
+          const isOver = idx === dragOverIndex;
           const config = PAGE_TYPE_CONFIG[page.type] || PAGE_TYPE_CONFIG.content;
           const Icon = config.icon;
 
           return (
             <div
               key={page.id || idx}
+              draggable={true}
+              onDragStart={(e) => handleDragStart(e, idx)}
+              onDragOver={(e) => handleDragOver(e, idx)}
+              onDragLeave={() => setDragOverIndex(null)}
+              onDrop={(e) => handleDrop(e, idx)}
+              onDragEnd={handleDragEnd}
               onClick={() => setActivePage(idx)}
-              className="group relative p-2.5 rounded-xl cursor-pointer transition-all border"
+              className="group relative p-2.5 rounded-xl cursor-grab active:cursor-grabbing transition-all border"
               style={{
-                backgroundColor: isActive ? 'var(--accent-soft)' : 'transparent',
-                borderColor: isActive ? 'var(--primary)' : 'transparent',
+                backgroundColor: isActive
+                  ? 'var(--accent-soft)'
+                  : isOver
+                  ? 'var(--surface-2)'
+                  : 'transparent',
+                borderColor: isOver
+                  ? 'var(--primary)'
+                  : isActive
+                  ? 'var(--primary)'
+                  : 'transparent',
+                opacity: isDragging ? 0.3 : 1,
+                transform: isOver ? 'scale(1.02)' : 'none',
               }}
-              onMouseEnter={e => {
-                if (!isActive) {
+              onMouseEnter={(e) => {
+                if (!isActive && !isOver) {
                   e.currentTarget.style.backgroundColor = 'var(--surface-2)';
                   e.currentTarget.style.borderColor = 'var(--border)';
                 }
               }}
-              onMouseLeave={e => {
-                if (!isActive) {
+              onMouseLeave={(e) => {
+                if (!isActive && !isOver) {
                   e.currentTarget.style.backgroundColor = 'transparent';
                   e.currentTarget.style.borderColor = 'transparent';
                 }
               }}
             >
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-2">
+                {/* Drag handle */}
+                <GripVertical className="w-3.5 h-3.5 flex-shrink-0 opacity-40 group-hover:opacity-100 transition-opacity" style={{ color: 'var(--text-muted)' }} />
+
                 {/* Page number */}
                 <div
-                  className="w-6 h-6 rounded-lg flex items-center justify-center text-[11px] font-bold flex-shrink-0"
+                  className="w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-bold flex-shrink-0"
                   style={{
                     backgroundColor: isActive ? 'var(--primary)' : 'var(--surface-2)',
                     color: isActive ? 'white' : 'var(--text-muted)',
@@ -117,45 +173,28 @@ export default function PageThumbnailsSidebar({ onOpenAiSectionWriter }) {
                   </span>
                 </div>
 
-                {/* Page controls */}
-                <div className="opacity-0 group-hover:opacity-100 flex items-center gap-0.5 transition-opacity">
-                  {idx > 0 && (
-                    <button
-                      onClick={e => { e.stopPropagation(); reorderPages(idx, idx - 1); }}
-                      className="p-1 rounded transition-colors"
-                      style={{ color: 'var(--text-muted)' }}
-                      onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'var(--surface-2)'; }}
-                      onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; }}
-                      title="Move Up"
-                    >
-                      <ChevronUp className="w-3 h-3" />
-                    </button>
-                  )}
-                  {idx < pages.length - 1 && (
-                    <button
-                      onClick={e => { e.stopPropagation(); reorderPages(idx, idx + 1); }}
-                      className="p-1 rounded transition-colors"
-                      style={{ color: 'var(--text-muted)' }}
-                      onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'var(--surface-2)'; }}
-                      onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; }}
-                      title="Move Down"
-                    >
-                      <ChevronDown className="w-3 h-3" />
-                    </button>
-                  )}
-                  {pages.length > 1 && (
-                    <button
-                      onClick={e => { e.stopPropagation(); deletePage(idx); }}
-                      className="p-1 rounded transition-colors"
-                      style={{ color: 'var(--text-muted)' }}
-                      onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#FEE2E2'; e.currentTarget.style.color = 'var(--danger)'; }}
-                      onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)'; }}
-                      title="Delete Page"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </button>
-                  )}
-                </div>
+                {/* Delete control */}
+                {pages.length > 1 && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deletePage(idx);
+                    }}
+                    className="opacity-0 group-hover:opacity-100 p-1 rounded transition-opacity"
+                    style={{ color: 'var(--text-muted)' }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = '#FEE2E2';
+                      e.currentTarget.style.color = 'var(--danger)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                      e.currentTarget.style.color = 'var(--text-muted)';
+                    }}
+                    title="Delete Page"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </div>
             </div>
           );

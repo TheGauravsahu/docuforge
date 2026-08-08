@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import api from '../lib/api.js';
 
 export const useEditorStore = create(
   persist(
@@ -44,13 +45,8 @@ export const useEditorStore = create(
         if (element) {
           Object.assign(element, newProperties);
 
-          const newHistory = get().history.slice(0, get().historyIndex + 1);
-          newHistory.push(JSON.parse(JSON.stringify(newContentJson)));
-
           set({
             document: { ...doc, contentJson: newContentJson },
-            history: newHistory,
-            historyIndex: newHistory.length - 1,
             isDirty: true
           });
         }
@@ -245,6 +241,9 @@ export const useEditorStore = create(
           activePageIndex: newContentJson.pages.length - 1,
           isDirty: true
         });
+
+        // Immediately sync database so exports use updated pages without delay
+        api.put(`/documents/${doc.id}`, { contentJson: newContentJson }).catch(() => {});
       },
 
       deletePage: (pageIndex) => {
@@ -261,11 +260,14 @@ export const useEditorStore = create(
           activePageIndex: nextActiveIndex,
           isDirty: true
         });
+
+        // Immediately sync database so exports use updated pages without delay
+        api.put(`/documents/${doc.id}`, { contentJson: newContentJson }).catch(() => {});
       },
 
       reorderPages: (startIndex, endIndex) => {
         const doc = get().document;
-        if (!doc || !doc.contentJson) return;
+        if (!doc || !doc.contentJson || startIndex === endIndex) return;
 
         const newContentJson = JSON.parse(JSON.stringify(doc.contentJson));
         const [removed] = newContentJson.pages.splice(startIndex, 1);

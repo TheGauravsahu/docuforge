@@ -10,6 +10,13 @@ export default function ExportModal({ isOpen, onClose }) {
   const [isExporting, setIsExporting] = useState(false);
   const [exportResult, setExportResult] = useState(null);
 
+  // Invalidate old export result each time document is saved or modal opens
+  React.useEffect(() => {
+    if (isOpen) {
+      setExportResult(null);
+    }
+  }, [isOpen, document?.contentJson]);
+
   if (!isOpen || !document) return null;
 
   const handlePrintPdf = (customHtml) => {
