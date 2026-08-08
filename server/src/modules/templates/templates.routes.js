@@ -6,6 +6,6 @@ const router = Router();
 
 router.get('/', getTemplates);
 router.post('/', authenticate, createTemplate);
-router.post('/:id/use', useTemplate);
+router.post('/:id/use', authenticate, useTemplate);
 
 export default router;

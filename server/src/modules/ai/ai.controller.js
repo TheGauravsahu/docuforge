@@ -1,6 +1,6 @@
 import { generateOutlineService, generateFullDocumentModelService, generateSectionService } from './ai.service.js';
 import { db } from '../../config/db.js';
-import { documents, usageLogs } from '../../db/schema.js';
+import { documents, usageLogs, users } from '../../db/schema.js';
 
 const handleAiError = (res, error) => {
   console.error('[AI Controller Error]', error.message);
@@ -54,13 +54,19 @@ export const generateFullDocument = async (req, res) => {
       outline
     });
 
+    let ownerId = req.user?.id;
+    if (!ownerId) {
+      const existingUsers = await db.select({ id: users.id }).from(users).limit(1);
+      if (existingUsers.length > 0) ownerId = existingUsers[0].id;
+    }
+
     const docTitle = contentJson.outline?.title || contentJson.placeholders?.topic_title || topic;
     const docId = `doc_${Date.now()}`;
     const [newDoc] = await db.insert(documents).values({
       id: docId,
       title: docTitle,
       type: type.toUpperCase(),
-      ownerId: req.user ? req.user.id : 'usr_default',
+      ownerId: ownerId || 'usr_default',
       folderId: folderId || null,
       templateId: templateId || 'tpl_physics_proj',
       status: 'DRAFT',
