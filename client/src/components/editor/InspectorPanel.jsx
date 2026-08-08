@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sliders, Trash2, AlignLeft, AlignCenter, AlignRight, Bold, Type } from 'lucide-react';
+import { Sliders, Trash2, AlignLeft, AlignCenter, AlignRight, Bold, Type, Sparkles, GraduationCap, Wand2, ChevronRight } from 'lucide-react';
 import { useEditorStore } from '../../store/useEditorStore.js';
 
 const FONT_OPTIONS = [
@@ -17,7 +17,11 @@ const FONT_OPTIONS = [
   { value: 'Times New Roman', label: 'Times New Roman' },
 ];
 
-export default function InspectorPanel() {
+export default function InspectorPanel({
+  onOpenPlaceholderModal,
+  onOpenAiModal,
+  onOpenAiSectionModal
+}) {
   const { document, activePageIndex, selectedElementId, updateElement, deleteElement, updateTheme } = useEditorStore();
 
   const activePage = document?.contentJson?.pages?.[activePageIndex];
@@ -26,14 +30,14 @@ export default function InspectorPanel() {
 
   return (
     <aside
-      className="w-72 flex flex-col h-full overflow-y-auto p-4 select-none border-l flex-shrink-0"
+      className="w-72 flex flex-col h-full overflow-y-auto p-4 select-none border-l flex-shrink-0 space-y-6"
       style={{
         backgroundColor: 'var(--surface-1)',
         borderColor: 'var(--border)',
       }}
     >
       <div
-        className="flex items-center gap-2 pb-3 mb-4 border-b"
+        className="flex items-center gap-2 pb-3 border-b"
         style={{ borderColor: 'var(--border)' }}
       >
         <Sliders className="w-4 h-4" style={{ color: 'var(--primary)' }} />
@@ -154,7 +158,7 @@ export default function InspectorPanel() {
           </div>
 
           {/* Delete Element Button */}
-          <div className="pt-4 border-t border-gray-100 dark:border-gray-800">
+          <div className="pt-2 border-t border-gray-100 dark:border-gray-800">
             <button
               onClick={() => deleteElement(activePageIndex, selectedElement.id)}
               className="w-full flex items-center justify-center gap-2 py-2 px-3 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 rounded-lg text-xs font-semibold hover:bg-red-100 transition-colors"
@@ -220,14 +224,70 @@ export default function InspectorPanel() {
             </div>
           </div>
 
-          <div className="p-3 bg-brand-blue/5 rounded-xl border border-brand-blue/10">
-            <p className="text-[11px] text-brand-blue dark:text-blue-300 leading-relaxed">
-              💡 <strong>Tip:</strong> Click any text object on the canvas to inspect and change its font family, font size, text color, alignment, and position properties.
-            </p>
-          </div>
-
         </div>
       )}
+
+      {/* AI Studio Tools Section */}
+      <div className="pt-4 border-t space-y-2.5" style={{ borderColor: 'var(--border)' }}>
+        <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+          <Wand2 className="w-3.5 h-3.5" style={{ color: 'var(--primary)' }} />
+          AI Studio Tools
+        </div>
+
+        <div className="space-y-2">
+          <button
+            onClick={onOpenAiSectionModal}
+            className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-[12px] font-bold transition-all border text-left shadow-sm hover:opacity-90"
+            style={{
+              backgroundColor: 'var(--accent-soft)',
+              borderColor: 'var(--primary)',
+              color: 'var(--primary)',
+            }}
+          >
+            <span className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 fill-current" />
+              AI Add Section
+            </span>
+            <ChevronRight className="w-3.5 h-3.5" />
+          </button>
+
+          <button
+            onClick={onOpenPlaceholderModal}
+            className="w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-[12px] font-semibold transition-colors border text-left"
+            style={{
+              backgroundColor: 'var(--surface-2)',
+              borderColor: 'var(--border)',
+              color: 'var(--text-primary)',
+            }}
+            onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--surface-1)'}
+            onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--surface-2)'}
+          >
+            <span className="flex items-center gap-2">
+              <GraduationCap className="w-4 h-4" style={{ color: 'var(--primary)' }} />
+              Fill Student & School Info
+            </span>
+            <ChevronRight className="w-3.5 h-3.5" style={{ color: 'var(--text-muted)' }} />
+          </button>
+
+          <button
+            onClick={onOpenAiModal}
+            className="w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-[12px] font-semibold transition-colors border text-left"
+            style={{
+              backgroundColor: 'var(--surface-2)',
+              borderColor: 'var(--border)',
+              color: 'var(--text-primary)',
+            }}
+            onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--surface-1)'}
+            onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--surface-2)'}
+          >
+            <span className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-emerald-500" />
+              AI Rewrite & Polish
+            </span>
+            <ChevronRight className="w-3.5 h-3.5" style={{ color: 'var(--text-muted)' }} />
+          </button>
+        </div>
+      </div>
 
     </aside>
   );

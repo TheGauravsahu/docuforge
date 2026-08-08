@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <rect width="64" height="64" rx="16" fill="#1E5B3F"/>
+  <path d="M20 16C20 14.8954 20.8954 14 22 14H36L46 24V48C46 49.1046 45.1046 50 44 50H22C20.8954 50 20 49.1046 20 48V16Z" fill="#2E7D56" stroke="#4ADE80" stroke-width="2"/>
+  <path d="M36 14V24H46" stroke="#4ADE80" stroke-width="2" stroke-linejoin="round"/>
+  <!-- AI Sparkle -->
+  <path d="M31 32L32.5 28L34 32L38 33.5L34 35L32.5 39L31 35L27 33.5L31 32Z" fill="#4ADE80"/>
+</svg>

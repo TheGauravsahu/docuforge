@@ -115,7 +115,15 @@ export default function FabricCanvas() {
 
     canvas.renderAll();
     if (window.document.fonts) {
-      window.document.fonts.ready.then(() => {
+      const fontsToLoad = Array.from(
+        new Set([
+          theme.fontFamily || 'Georgia',
+          ...elements.map(e => e.fontFamily).filter(Boolean)
+        ])
+      );
+      Promise.all(
+        fontsToLoad.map(f => window.document.fonts.load(`14px "${f}"`).catch(() => {}))
+      ).then(() => {
         canvas.renderAll();
       });
     }

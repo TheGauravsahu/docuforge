@@ -1,6 +1,7 @@
 import { eq } from 'drizzle-orm';
 import { db } from '../../config/db.js';
-import { templates } from '../../db/schema.js';
+import { templates, documents } from '../../db/schema.js';
+import { generateFullDocumentModelService } from '../ai/ai.service.js';
 
 export const getTemplates = async (req, res) => {
   try {
@@ -93,6 +94,41 @@ export const createTemplate = async (req, res) => {
     }).returning();
 
     res.status(201).json({ template: newTpl });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const useTemplate = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const docId = `doc_${Date.now()}`;
+    const tplName = id.includes('cert')
+      ? 'Certificate of Achievement'
+      : id.includes('lab')
+        ? 'Academic Research Report'
+        : 'Investigatory Project Report';
+
+    const contentJson = await generateFullDocumentModelService({
+      topic: tplName,
+      templateId: id,
+      docType: 'PDF'
+    });
+
+    const [newDoc] = await db.insert(documents).values({
+      id: docId,
+      title: tplName,
+      type: 'PDF',
+      ownerId: req.user ? req.user.id : 'usr_default',
+      templateId: id,
+      status: 'DRAFT',
+      contentJson,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }).returning();
+
+    res.status(201).json({ document: newDoc });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, Sparkles, FileText, Wand2, Layers, CheckCircle2, ChevronRight, Zap } from 'lucide-react';
+import { ArrowRight, Sparkles, FileText, Wand2, Layers, CheckCircle2, ChevronRight, Zap, Github, Heart, LayoutDashboard, Settings, LogOut, ChevronDown } from 'lucide-react';
 import { useAuthStore } from '../store/useAuthStore.js';
 
 // The landing page is always dark — ignores the user's app theme toggle
 export default function LandingPage() {
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuthStore();
+  const { user, isAuthenticated, logout } = useAuthStore();
+  const [openUserMenu, setOpenUserMenu] = useState(false);
   const [promptText, setPromptText] = useState('');
   const [format, setFormat] = useState('PDF');
 
@@ -63,22 +64,90 @@ export default function LandingPage() {
 
           {/* Right CTAs */}
           <div className="flex items-center gap-3">
-            <button
-              onClick={() => navigate('/auth')}
-              className="text-[14px] font-medium transition-colors"
-              style={{ color: '#9AAAA1' }}
-              onMouseEnter={e => e.currentTarget.style.color = '#EDF2EE'}
-              onMouseLeave={e => e.currentTarget.style.color = '#9AAAA1'}
-            >
-              Sign in
-            </button>
-            <button
-              onClick={() => navigate('/auth')}
-              className="px-4 py-2 rounded-xl text-[14px] font-semibold text-white transition-opacity hover:opacity-90"
-              style={{ backgroundColor: '#1E5B3F' }}
-            >
-              Get started
-            </button>
+            {isAuthenticated ? (
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => navigate('/dashboard')}
+                  className="px-4 py-2 rounded-xl text-[14px] font-semibold text-white flex items-center gap-2 transition-opacity hover:opacity-90 shadow-sm"
+                  style={{ backgroundColor: '#1E5B3F' }}
+                >
+                  <LayoutDashboard className="w-4 h-4" />
+                  Dashboard
+                </button>
+
+                {/* User avatar dropdown */}
+                <div className="relative">
+                  <button
+                    onClick={() => setOpenUserMenu(!openUserMenu)}
+                    className="flex items-center gap-2 p-1 pl-2 rounded-xl transition-colors border"
+                    style={{ borderColor: '#1E2922', backgroundColor: '#141A17' }}
+                  >
+                    <img
+                      src={user?.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name}`}
+                      alt="Avatar"
+                      className="w-7 h-7 rounded-full border"
+                      style={{ borderColor: '#1E2922' }}
+                    />
+                    <span className="text-[13px] font-semibold text-white truncate max-w-[90px]">
+                      {user?.name || 'User'}
+                    </span>
+                    <ChevronDown className="w-3.5 h-3.5 text-gray-400 mr-1" />
+                  </button>
+
+                  {openUserMenu && (
+                    <>
+                      <div className="fixed inset-0 z-10" onClick={() => setOpenUserMenu(false)} />
+                      <div
+                        className="absolute right-0 top-11 z-20 w-48 rounded-xl border shadow-2xl py-1.5 space-y-1 animate-in fade-in zoom-in-95"
+                        style={{ backgroundColor: '#141A17', borderColor: '#1E2922' }}
+                      >
+                        <button
+                          onClick={() => { setOpenUserMenu(false); navigate('/dashboard'); }}
+                          className="w-full flex items-center gap-2.5 px-3.5 py-2 text-[13px] font-medium text-left text-gray-200 hover:bg-[#1E2922] transition-colors"
+                        >
+                          <LayoutDashboard className="w-4 h-4 text-emerald-400" />
+                          Dashboard
+                        </button>
+                        <button
+                          onClick={() => { setOpenUserMenu(false); navigate('/settings'); }}
+                          className="w-full flex items-center gap-2.5 px-3.5 py-2 text-[13px] font-medium text-left text-gray-200 hover:bg-[#1E2922] transition-colors"
+                        >
+                          <Settings className="w-4 h-4 text-gray-400" />
+                          Settings
+                        </button>
+                        <div style={{ height: '1px', backgroundColor: '#1E2922', margin: '4px 0' }} />
+                        <button
+                          onClick={() => { setOpenUserMenu(false); logout(); }}
+                          className="w-full flex items-center gap-2.5 px-3.5 py-2 text-[13px] font-medium text-left text-red-400 hover:bg-red-950/30 transition-colors"
+                        >
+                          <LogOut className="w-4 h-4" />
+                          Log out
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <>
+                <button
+                  onClick={() => navigate('/auth')}
+                  className="text-[14px] font-medium transition-colors"
+                  style={{ color: '#9AAAA1' }}
+                  onMouseEnter={e => e.currentTarget.style.color = '#EDF2EE'}
+                  onMouseLeave={e => e.currentTarget.style.color = '#9AAAA1'}
+                >
+                  Sign in
+                </button>
+                <button
+                  onClick={() => navigate('/auth')}
+                  className="px-4 py-2 rounded-xl text-[14px] font-semibold text-white transition-opacity hover:opacity-90"
+                  style={{ backgroundColor: '#1E5B3F' }}
+                >
+                  Get started
+                </button>
+              </>
+            )}
           </div>
         </div>
       </nav>
@@ -282,13 +351,41 @@ export default function LandingPage() {
 
       {/* ── FOOTER ───────────────────────────────────────── */}
       <footer className="border-t py-10" style={{ borderColor: '#1E2922' }}>
-        <div className="max-w-7xl mx-auto px-5 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-[13px]" style={{ color: '#6B7D73' }}>
+        <div className="max-w-7xl mx-auto px-5 sm:px-8 flex flex-col md:flex-row items-center justify-between gap-4 text-[13px]" style={{ color: '#6B7D73' }}>
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded-md flex items-center justify-center" style={{ backgroundColor: '#1E5B3F' }}>
               <Sparkles className="w-3 h-3 text-white" />
             </div>
             <span>DocuForge AI © 2026. All rights reserved.</span>
           </div>
+
+          {/* Gaurav Sahu Developer Credits */}
+          <div className="flex items-center gap-2 text-[13px]">
+            <span>Crafted with</span>
+            <Heart className="w-3.5 h-3.5 fill-current text-emerald-400" />
+            <span>by</span>
+            <a
+              href="https://gauravsahu.vercel.app/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-bold underline transition-colors"
+              style={{ color: '#4ADE80' }}
+            >
+              Gaurav Sahu
+            </a>
+            <span>•</span>
+            <a
+              href="https://github.com/TheGauravsahu"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 font-medium transition-colors hover:text-white"
+              style={{ color: '#9AAAA1' }}
+            >
+              <Github className="w-3.5 h-3.5" />
+              GitHub
+            </a>
+          </div>
+
           <div className="flex items-center gap-6">
             <a href="#" className="hover:text-white transition-colors">Privacy</a>
             <a href="#" className="hover:text-white transition-colors">Terms</a>

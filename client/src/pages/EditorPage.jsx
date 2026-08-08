@@ -122,7 +122,11 @@ export default function EditorPage() {
         </div>
 
         {/* Right: inspector */}
-        <InspectorPanel />
+        <InspectorPanel
+          onOpenPlaceholderModal={() => setIsPlaceholderModalOpen(true)}
+          onOpenAiModal={() => setIsAiModalOpen(true)}
+          onOpenAiSectionModal={() => setIsAiSectionModalOpen(true)}
+        />
       </div>
 
       {/* Modals */}

@@ -7,32 +7,32 @@ import { ENV } from '../../config/env.js';
 
 export const register = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { email, password, name } = req.body;
     if (!email || !password || !name) {
-      return res.status(400).json({ error: 'Name, email and password are required' });
+      return res.status(400).json({ error: 'Email, password and name are required' });
     }
 
     const cleanEmail = email.toLowerCase().trim();
 
-    // Query Neon DB for existing user
+    // Check existing user in Neon DB
     const existingUsers = await db.select().from(users).where(eq(users.email, cleanEmail));
     if (existingUsers.length > 0) {
-      return res.status(409).json({ error: 'User with this email already exists' });
+      return res.status(400).json({ error: 'Email already registered. Please login.' });
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
     const userId = `usr_${Date.now()}`;
-    const avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(name)}`;
+    const defaultAvatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(name)}`;
 
     const [newUser] = await db.insert(users).values({
       id: userId,
       email: cleanEmail,
-      passwordHash,
       name,
-      avatarUrl,
+      passwordHash,
       role: 'USER',
-      authProvider: 'credentials',
+      avatarUrl: defaultAvatar,
       createdAt: new Date(),
+      updatedAt: new Date(),
     }).returning();
 
     const token = jwt.sign(
@@ -109,10 +109,47 @@ export const getMe = async (req, res) => {
         id: user.id,
         email: user.email,
         name: user.name,
-        avatarUrl: user.avatarUrl || 'https://api.dicebear.com/7.x/avataaars/svg?seed=User',
+        avatarUrl: user.avatarUrl,
         role: user.role,
       },
     });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const updateProfile = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { name, email, avatarUrl, password } = req.body;
+
+    const updates = {};
+    if (name) updates.name = name;
+    if (email) updates.email = email.toLowerCase().trim();
+    if (avatarUrl) updates.avatarUrl = avatarUrl;
+    if (password && password.trim().length > 0) {
+      updates.passwordHash = await bcrypt.hash(password, 10);
+    }
+    updates.updatedAt = new Date();
+
+    const [updatedUser] = await db.update(users)
+      .set(updates)
+      .where(eq(users.id, userId))
+      .returning();
+
+    if (!updatedUser) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const userPayload = {
+      id: updatedUser.id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      role: updatedUser.role,
+      avatarUrl: updatedUser.avatarUrl,
+    };
+
+    res.json({ user: userPayload, message: 'Profile updated successfully' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

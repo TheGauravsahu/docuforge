@@ -3,7 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Wand2, LayoutTemplate, Settings, ShieldAlert,
   FolderPlus, Folder, FileText, LogOut, Sun, Moon,
-  Sparkles, PanelLeftClose, PanelLeft, Menu, X
+  Sparkles, PanelLeftClose, PanelLeft, Menu, X, Github, Heart
 } from 'lucide-react';
 import { useAuthStore } from '../../store/useAuthStore.js';
 import { useTheme } from '../../context/ThemeContext.jsx';
@@ -257,9 +257,9 @@ export default function AppSidebar({ folders = [], onOpenFolderModal }) {
               onClick={logout}
               className="p-2 rounded-lg transition-colors"
               style={{ color: 'var(--text-muted)' }}
-              onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#FEE2E2'; e.currentTarget.style.color = 'var(--danger)'; }}
+              onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'var(--surface-1)'; e.currentTarget.style.color = 'var(--danger)'; }}
               onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)'; }}
-              title="Log out"
+              title="Log Out"
             >
               <LogOut className="w-4 h-4" />
             </button>
