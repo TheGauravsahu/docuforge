@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import {
   FileText, Search, Sparkles, Trash2, Clock,
   LayoutGrid, List, Wand2, ArrowRight, FileCheck,
-  FileClock, Cpu, FolderOpen
+  FileClock, Cpu, FolderOpen, PenTool
 } from 'lucide-react';
 import DashboardLayout from '../components/layout/DashboardLayout.jsx';
 import StatCard from '../components/ui/StatCard.jsx';
@@ -100,14 +100,24 @@ export default function DashboardPage() {
             </p>
           </div>
 
-          <button
-            onClick={() => navigate('/generate')}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-[14px] font-semibold text-white shadow-md transition-opacity hover:opacity-90 flex-shrink-0"
-            style={{ backgroundColor: 'var(--primary)' }}
-          >
-            <Wand2 className="w-4 h-4" />
-            New from topic
-          </button>
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <button
+              onClick={() => navigate('/create-manual')}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-semibold transition-colors border flex-shrink-0"
+              style={{ backgroundColor: 'var(--surface-1)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
+            >
+              <PenTool className="w-4 h-4 text-emerald-500" />
+              Build Manually
+            </button>
+            <button
+              onClick={() => navigate('/generate')}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-[14px] font-semibold text-white shadow-md transition-opacity hover:opacity-90 flex-shrink-0"
+              style={{ backgroundColor: 'var(--primary)' }}
+            >
+              <Wand2 className="w-4 h-4" />
+              New from topic
+            </button>
+          </div>
         </div>
 
         {/* Stat row: 4 cards, last one dark green */}

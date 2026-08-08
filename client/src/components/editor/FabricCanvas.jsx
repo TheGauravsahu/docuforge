@@ -133,6 +133,11 @@ export default function FabricCanvas() {
             fontSize: el.fontSize || 14,
             fontFamily: fontFam,
             fontWeight: el.fontWeight || "normal",
+            fontStyle: el.fontStyle || "normal",
+            underline: !!el.underline,
+            linethrough: !!el.linethrough,
+            textBackgroundColor: el.textBackgroundColor || "",
+            lineHeight: el.lineHeight || 1.3,
             fill: el.color || theme.primaryColor || "#1A1A1A",
             textAlign: el.align || "left",
           });
@@ -147,12 +152,16 @@ export default function FabricCanvas() {
             fontSize: el.fontSize || 14,
             fontFamily: fontFam,
             fontWeight: el.fontWeight || "normal",
+            fontStyle: el.fontStyle || "normal",
+            underline: !!el.underline,
+            linethrough: !!el.linethrough,
+            textBackgroundColor: el.textBackgroundColor || "",
             fill: el.color || theme.primaryColor || "#1A1A1A",
             textAlign: el.align || "left",
             splitByGrapheme: false,
             editable: true,
             elementId: el.id,
-            lineHeight: 1.3,
+            lineHeight: el.lineHeight || 1.3,
           });
 
           textObj.on("changed", () => {

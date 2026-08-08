@@ -87,17 +87,17 @@ export default function EditorToolbar({
 
   return (
     <header
-      className="h-14 flex items-center justify-between gap-3 px-4 border-b z-20 flex-shrink-0"
+      className="h-14 flex items-center justify-between gap-2 px-3 border-b z-20 flex-shrink-0 overflow-x-auto"
       style={{
         backgroundColor: 'var(--surface-1)',
         borderColor: 'var(--border)',
       }}
     >
       {/* Left: back + title + save status */}
-      <div className="flex items-center gap-3 flex-shrink-0">
+      <div className="flex items-center gap-2 flex-shrink-0">
         <button
           onClick={() => navigate('/dashboard')}
-          className="p-2 rounded-xl transition-colors flex-shrink-0"
+          className="p-1.5 rounded-xl transition-colors flex-shrink-0"
           style={{ color: 'var(--text-muted)' }}
           onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'var(--surface-2)'; e.currentTarget.style.color = 'var(--text-primary)'; }}
           onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)'; }}
@@ -106,11 +106,11 @@ export default function EditorToolbar({
           <ArrowLeft className="w-4 h-4" />
         </button>
 
-        <div className="w-px h-5" style={{ backgroundColor: 'var(--border)' }} />
+        <div className="w-px h-5 hidden sm:block" style={{ backgroundColor: 'var(--border)' }} />
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <span
-            className="text-[14px] font-semibold truncate max-w-[180px]"
+            className="text-[13px] sm:text-[14px] font-semibold truncate max-w-[110px] sm:max-w-[180px]"
             style={{ color: 'var(--text-primary)' }}
           >
             {document?.title || 'Untitled Document'}
@@ -118,7 +118,7 @@ export default function EditorToolbar({
 
           {/* Save status pill */}
           <span
-            className="flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0"
+            className="flex items-center gap-1 text-[10px] sm:text-[11px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0"
             style={
               isDirty
                 ? { backgroundColor: '#FEF3C7', color: '#92400E' }
@@ -142,7 +142,7 @@ export default function EditorToolbar({
 
       {/* Center: editing tools */}
       <div
-        className="flex items-center gap-1.5 px-2 py-1 rounded-xl flex-shrink-0"
+        className="flex items-center gap-1 sm:gap-1.5 px-2 py-1 rounded-xl flex-shrink-0 overflow-x-auto"
         style={{ backgroundColor: 'var(--surface-2)' }}
       >
         {/* Undo / Redo */}

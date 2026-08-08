@@ -68,11 +68,11 @@ export default function LandingPage() {
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => navigate('/dashboard')}
-                  className="px-4 py-2 rounded-xl text-[14px] font-semibold text-white flex items-center gap-2 transition-opacity hover:opacity-90 shadow-sm"
+                  className="px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-xl text-[13px] sm:text-[14px] font-semibold text-white flex items-center gap-2 transition-opacity hover:opacity-90 shadow-sm"
                   style={{ backgroundColor: '#1E5B3F' }}
                 >
                   <LayoutDashboard className="w-4 h-4" />
-                  Dashboard
+                  <span className="hidden sm:inline">Dashboard</span>
                 </button>
 
                 {/* User avatar dropdown */}

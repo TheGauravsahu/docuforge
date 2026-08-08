@@ -3,7 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Wand2, LayoutTemplate, Settings, ShieldAlert,
   FolderPlus, Folder, FileText, LogOut, Sun, Moon,
-  Sparkles, PanelLeftClose, PanelLeft, Menu, X, Github, Heart
+  Sparkles, PanelLeftClose, PanelLeft, Menu, X
 } from 'lucide-react';
 import { useAuthStore } from '../../store/useAuthStore.js';
 import { useTheme } from '../../context/ThemeContext.jsx';
@@ -28,44 +28,49 @@ export default function AppSidebar({ folders = [], onOpenFolderModal }) {
   ];
 
   const SidebarContent = () => (
-    <div className="flex flex-col h-full" style={{ backgroundColor: 'var(--surface-2)' }}>
+    <div className="flex flex-col h-full select-none" style={{ backgroundColor: 'var(--surface-2)' }}>
       {/* Header */}
       <div
-        className="h-16 px-4 flex items-center justify-between border-b flex-shrink-0"
+        className={`h-16 px-3 flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'} border-b flex-shrink-0`}
         style={{ borderColor: 'var(--border)' }}
       >
-        <button
-          onClick={() => navigate('/dashboard')}
-          className="flex items-center gap-3 overflow-hidden"
-        >
-          <div
-            className="w-9 h-9 rounded-xl flex items-center justify-center font-bold flex-shrink-0 shadow-sm"
-            style={{ backgroundColor: 'var(--primary)', color: 'white' }}
+        {!isCollapsed && (
+          <button
+            onClick={() => navigate('/dashboard')}
+            className="flex items-center gap-2.5 overflow-hidden"
           >
-            <Sparkles className="w-4 h-4 fill-current" />
-          </div>
-          {!isCollapsed && (
+            <div
+              className="w-8 h-8 rounded-xl flex items-center justify-center font-bold flex-shrink-0 shadow-sm"
+              style={{ backgroundColor: 'var(--primary)', color: 'white' }}
+            >
+              <Sparkles className="w-4 h-4 fill-current" />
+            </div>
             <div className="flex flex-col text-left truncate">
-              <span className="font-bold text-[15px] tracking-tight" style={{ color: 'var(--text-primary)' }}>
+              <span className="font-bold text-[14px] tracking-tight" style={{ color: 'var(--text-primary)' }}>
                 DocuForge
               </span>
-              <span className="text-[10px] tracking-widest uppercase font-semibold" style={{ color: 'var(--text-muted)' }}>
+              <span className="text-[9px] tracking-widest uppercase font-semibold" style={{ color: 'var(--text-muted)' }}>
                 AI Studio
               </span>
             </div>
-          )}
-        </button>
+          </button>
+        )}
 
         {/* Collapse toggle — desktop only */}
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="hidden lg:flex p-1.5 rounded-lg transition-colors"
-          style={{ color: 'var(--text-muted)' }}
+          className="hidden lg:flex p-2 rounded-xl transition-colors"
+          style={{
+            color: isCollapsed ? 'var(--primary)' : 'var(--text-muted)',
+            backgroundColor: isCollapsed ? 'var(--surface-1)' : 'transparent',
+          }}
           onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'var(--surface-1)'; }}
-          onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; }}
-          title={isCollapsed ? 'Expand' : 'Collapse'}
+          onMouseLeave={e => {
+            if (!isCollapsed) e.currentTarget.style.backgroundColor = 'transparent';
+          }}
+          title={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
         >
-          {isCollapsed ? <PanelLeft className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
+          {isCollapsed ? <PanelLeft className="w-5 h-5" /> : <PanelLeftClose className="w-4 h-4" />}
         </button>
 
         {/* Mobile close */}
@@ -79,12 +84,11 @@ export default function AppSidebar({ folders = [], onOpenFolderModal }) {
       </div>
 
       {/* Scrollable nav area */}
-      <div className="flex-1 overflow-y-auto px-3 py-4 space-y-6">
-
+      <div className="flex-1 overflow-y-auto px-2 py-4 space-y-5">
         {/* Main nav */}
-        <div className="space-y-0.5">
+        <div className="space-y-1">
           {!isCollapsed && (
-            <div className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+            <div className="px-3 pb-1.5 text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
               Navigation
             </div>
           )}
@@ -99,7 +103,7 @@ export default function AppSidebar({ folders = [], onOpenFolderModal }) {
               >
                 {({ isActive }) => (
                   <div
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer text-[13px] font-medium transition-colors"
+                    className={`flex items-center ${isCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3 py-2.5'} rounded-xl cursor-pointer text-[13px] font-medium transition-all`}
                     style={{
                       backgroundColor: isActive ? 'var(--accent-soft)' : 'transparent',
                       color: isActive ? 'var(--primary)' : 'var(--text-secondary)',
@@ -115,6 +119,7 @@ export default function AppSidebar({ folders = [], onOpenFolderModal }) {
                         e.currentTarget.style.backgroundColor = 'transparent';
                       }
                     }}
+                    title={isCollapsed ? item.label : undefined}
                   >
                     <Icon className="w-4 h-4 flex-shrink-0" />
                     {!isCollapsed && (
@@ -136,10 +141,10 @@ export default function AppSidebar({ folders = [], onOpenFolderModal }) {
         </div>
 
         {/* Folders section */}
-        <div className="space-y-0.5">
+        <div className="space-y-1">
           {!isCollapsed && (
-            <div className="px-3 pb-2 flex items-center justify-between">
-              <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+            <div className="px-3 pb-1.5 flex items-center justify-between">
+              <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
                 Folders
               </span>
               <button
@@ -157,7 +162,7 @@ export default function AppSidebar({ folders = [], onOpenFolderModal }) {
 
           <button
             onClick={() => { setActiveFolder(null); setIsMobileOpen(false); }}
-            className="w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-colors text-[13px]"
+            className={`w-full flex items-center ${isCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3 py-2'} rounded-xl transition-colors text-[13px]`}
             style={{
               backgroundColor: activeFolderId === null ? 'var(--accent-soft)' : 'transparent',
               color: activeFolderId === null ? 'var(--primary)' : 'var(--text-secondary)',
@@ -165,6 +170,7 @@ export default function AppSidebar({ folders = [], onOpenFolderModal }) {
             }}
             onMouseEnter={e => { if (activeFolderId !== null) e.currentTarget.style.backgroundColor = 'var(--surface-1)'; }}
             onMouseLeave={e => { if (activeFolderId !== null) e.currentTarget.style.backgroundColor = 'transparent'; }}
+            title={isCollapsed ? 'All Documents' : undefined}
           >
             <FileText className="w-4 h-4 flex-shrink-0" />
             {!isCollapsed && <span className="truncate">All Documents</span>}
@@ -174,7 +180,7 @@ export default function AppSidebar({ folders = [], onOpenFolderModal }) {
             <button
               key={folder.id}
               onClick={() => { setActiveFolder(folder.id); setIsMobileOpen(false); }}
-              className="w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-colors text-[13px]"
+              className={`w-full flex items-center ${isCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3 py-2'} rounded-xl transition-colors text-[13px]`}
               style={{
                 backgroundColor: activeFolderId === folder.id ? 'var(--accent-soft)' : 'transparent',
                 color: activeFolderId === folder.id ? 'var(--primary)' : 'var(--text-secondary)',
@@ -182,6 +188,7 @@ export default function AppSidebar({ folders = [], onOpenFolderModal }) {
               }}
               onMouseEnter={e => { if (activeFolderId !== folder.id) e.currentTarget.style.backgroundColor = 'var(--surface-1)'; }}
               onMouseLeave={e => { if (activeFolderId !== folder.id) e.currentTarget.style.backgroundColor = 'transparent'; }}
+              title={isCollapsed ? folder.name : undefined}
             >
               <Folder className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--text-muted)' }} />
               {!isCollapsed && <span className="truncate">{folder.name}</span>}
@@ -191,7 +198,7 @@ export default function AppSidebar({ folders = [], onOpenFolderModal }) {
           {!isCollapsed && (
             <button
               onClick={onOpenFolderModal}
-              className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-[13px] font-medium transition-colors"
+              className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-[12px] font-medium transition-colors"
               style={{ color: 'var(--text-muted)' }}
               onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'var(--surface-1)'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
               onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)'; }}
@@ -203,15 +210,52 @@ export default function AppSidebar({ folders = [], onOpenFolderModal }) {
         </div>
       </div>
 
-      {/* Footer: user profile + logout controls */}
+      {/* Footer: user profile + controls */}
       <div
-        className="px-3 py-3 border-t space-y-2 flex-shrink-0"
+        className="px-2 py-3 border-t flex-shrink-0"
         style={{ borderColor: 'var(--border)' }}
       >
+        {isCollapsed ? (
+          /* Collapsed Vertical Layout (No Overlap) */
+          <div className="flex flex-col items-center gap-2.5 py-1">
+            <button
+              onClick={() => navigate('/settings')}
+              title={user?.name || 'User Settings'}
+              className="hover:scale-105 transition-transform"
+            >
+              <img
+                src={user?.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name}`}
+                alt="Avatar"
+                className="w-8 h-8 rounded-full border shadow-sm"
+                style={{ borderColor: 'var(--border)' }}
+              />
+            </button>
 
-        {/* User row */}
-        <div className="flex items-center justify-between px-1">
-          {!isCollapsed ? (
+            <button
+              onClick={toggleTheme}
+              className="p-1.5 rounded-lg transition-colors"
+              style={{ color: 'var(--text-muted)' }}
+              onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'var(--surface-1)'; e.currentTarget.style.color = 'var(--text-primary)'; }}
+              onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)'; }}
+              title="Toggle theme"
+            >
+              {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4" />}
+            </button>
+
+            <button
+              onClick={logout}
+              className="p-1.5 rounded-lg transition-colors"
+              style={{ color: 'var(--text-muted)' }}
+              onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'var(--surface-1)'; e.currentTarget.style.color = 'var(--danger)'; }}
+              onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)'; }}
+              title="Log Out"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          </div>
+        ) : (
+          /* Expanded Horizontal Layout */
+          <div className="flex items-center justify-between px-1">
             <button
               onClick={() => navigate('/settings')}
               className="flex items-center gap-2.5 flex-1 min-w-0 group text-left"
@@ -231,40 +275,31 @@ export default function AppSidebar({ folders = [], onOpenFolderModal }) {
                 </span>
               </div>
             </button>
-          ) : (
-            <button onClick={() => navigate('/settings')}>
-              <img
-                src={user?.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name}`}
-                alt="Avatar"
-                className="w-8 h-8 rounded-full border"
-                style={{ borderColor: 'var(--border)' }}
-              />
-            </button>
-          )}
 
-          <div className="flex items-center gap-1 ml-1">
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-lg transition-colors"
-              style={{ color: 'var(--text-muted)' }}
-              onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'var(--surface-1)'; e.currentTarget.style.color = 'var(--text-primary)'; }}
-              onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)'; }}
-              title="Toggle theme"
-            >
-              {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-            </button>
-            <button
-              onClick={logout}
-              className="p-2 rounded-lg transition-colors"
-              style={{ color: 'var(--text-muted)' }}
-              onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'var(--surface-1)'; e.currentTarget.style.color = 'var(--danger)'; }}
-              onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)'; }}
-              title="Log Out"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
+            <div className="flex items-center gap-0.5 ml-1">
+              <button
+                onClick={toggleTheme}
+                className="p-1.5 rounded-lg transition-colors"
+                style={{ color: 'var(--text-muted)' }}
+                onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'var(--surface-1)'; e.currentTarget.style.color = 'var(--text-primary)'; }}
+                onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)'; }}
+                title="Toggle theme"
+              >
+                {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4" />}
+              </button>
+              <button
+                onClick={logout}
+                className="p-1.5 rounded-lg transition-colors"
+                style={{ color: 'var(--text-muted)' }}
+                onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'var(--surface-1)'; e.currentTarget.style.color = 'var(--danger)'; }}
+                onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)'; }}
+                title="Log Out"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
@@ -273,7 +308,7 @@ export default function AppSidebar({ folders = [], onOpenFolderModal }) {
     <>
       {/* Desktop sidebar */}
       <aside
-        className={`hidden lg:flex flex-col h-screen flex-shrink-0 border-r transition-all duration-300`}
+        className={`hidden lg:flex flex-col h-screen flex-shrink-0 border-r transition-all duration-200`}
         style={{
           width: isCollapsed ? '72px' : '220px',
           borderColor: 'var(--border)',

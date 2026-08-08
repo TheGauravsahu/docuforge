@@ -151,6 +151,9 @@ export const exportToPdfHtml = (contentJson, docTitle) => {
           max-width: ${widthVal}px;
           font-size: ${el.fontSize || 14}px;
           font-weight: ${el.fontWeight || 'normal'};
+          font-style: ${el.fontStyle || 'normal'};
+          text-decoration: ${[el.underline ? 'underline' : '', el.linethrough ? 'line-through' : ''].filter(Boolean).join(' ') || 'none'};
+          background-color: ${el.textBackgroundColor || 'transparent'};
           font-family: '${fontFam}', 'Inter', 'Geist', 'Cinzel', serif, sans-serif;
           text-align: ${el.align || 'left'};
           color: ${textColor};
@@ -158,7 +161,7 @@ export const exportToPdfHtml = (contentJson, docTitle) => {
           word-wrap: break-word;
           overflow-wrap: break-word;
           word-break: break-word;
-          line-height: 1.4;
+          line-height: ${el.lineHeight || 1.4};
           box-sizing: border-box;
         `;
         return `<div class="element-text" style="${style}">${el.content}</div>`;

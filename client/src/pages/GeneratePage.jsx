@@ -89,7 +89,26 @@ export default function GeneratePage() {
 
   return (
     <DashboardLayout>
-      <div className="max-w-3xl mx-auto px-6 py-10">
+      <div className="max-w-2xl mx-auto px-6 py-8 space-y-6">
+
+        {/* Manual Fallback Banner */}
+        <div
+          className="p-3.5 rounded-2xl border flex items-center justify-between gap-3 shadow-sm"
+          style={{ backgroundColor: 'var(--surface-1)', borderColor: 'var(--border)' }}
+        >
+          <div className="flex items-center gap-2 text-xs" style={{ color: 'var(--text-secondary)' }}>
+            <Info className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+            <span>AI quota limit hit or prefer building from scratch? Create your document manually.</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => navigate('/create-manual')}
+            className="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors flex-shrink-0 border"
+            style={{ backgroundColor: 'var(--accent-soft)', borderColor: 'var(--border)', color: 'var(--primary)' }}
+          >
+            Build Manually →
+          </button>
+        </div>
 
         {/* Header */}
         <div className="mb-8">

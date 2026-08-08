@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sliders, Trash2, AlignLeft, AlignCenter, AlignRight, Bold, Type, Sparkles, GraduationCap, Wand2, ChevronRight, Image as ImageIcon } from 'lucide-react';
+import { Sliders, Trash2, AlignLeft, AlignCenter, AlignRight, Bold, Italic, Underline, Strikethrough, Highlighter, Type, Sparkles, GraduationCap, Wand2, ChevronRight, Image as ImageIcon } from 'lucide-react';
 import { useEditorStore } from '../../store/useEditorStore.js';
 
 const FONT_OPTIONS = [
@@ -201,30 +201,33 @@ export default function InspectorPanel({
             {/* Text Formatting & Alignment */}
             <div>
               <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                Alignment & Style
+                Alignment & Text Formatting
               </label>
-              <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
+              <div className="grid grid-cols-7 gap-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
                 <button
                   onClick={() => updateElement(activePageIndex, selectedElement.id, { align: 'left' })}
-                  className={`p-1.5 rounded flex-1 flex justify-center ${
-                    selectedElement.align === 'left' ? 'bg-white dark:bg-gray-700 shadow-sm' : ''
+                  className={`p-1.5 rounded flex justify-center ${
+                    selectedElement.align === 'left' ? 'bg-white dark:bg-gray-700 shadow-sm text-emerald-500' : ''
                   }`}
+                  title="Align Left"
                 >
                   <AlignLeft className="w-3.5 h-3.5" />
                 </button>
                 <button
                   onClick={() => updateElement(activePageIndex, selectedElement.id, { align: 'center' })}
-                  className={`p-1.5 rounded flex-1 flex justify-center ${
-                    selectedElement.align === 'center' ? 'bg-white dark:bg-gray-700 shadow-sm' : ''
+                  className={`p-1.5 rounded flex justify-center ${
+                    selectedElement.align === 'center' ? 'bg-white dark:bg-gray-700 shadow-sm text-emerald-500' : ''
                   }`}
+                  title="Align Center"
                 >
                   <AlignCenter className="w-3.5 h-3.5" />
                 </button>
                 <button
                   onClick={() => updateElement(activePageIndex, selectedElement.id, { align: 'right' })}
-                  className={`p-1.5 rounded flex-1 flex justify-center ${
-                    selectedElement.align === 'right' ? 'bg-white dark:bg-gray-700 shadow-sm' : ''
+                  className={`p-1.5 rounded flex justify-center ${
+                    selectedElement.align === 'right' ? 'bg-white dark:bg-gray-700 shadow-sm text-emerald-500' : ''
                   }`}
+                  title="Align Right"
                 >
                   <AlignRight className="w-3.5 h-3.5" />
                 </button>
@@ -234,30 +237,108 @@ export default function InspectorPanel({
                       fontWeight: selectedElement.fontWeight === 'bold' ? 'normal' : 'bold'
                     })
                   }
-                  className={`p-1.5 rounded flex-1 flex justify-center ${
-                    selectedElement.fontWeight === 'bold' ? 'bg-white dark:bg-gray-700 shadow-sm text-brand-blue font-bold' : ''
+                  className={`p-1.5 rounded flex justify-center ${
+                    selectedElement.fontWeight === 'bold' ? 'bg-white dark:bg-gray-700 shadow-sm text-emerald-500 font-bold' : ''
                   }`}
+                  title="Bold"
                 >
                   <Bold className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() =>
+                    updateElement(activePageIndex, selectedElement.id, {
+                      fontStyle: selectedElement.fontStyle === 'italic' ? 'normal' : 'italic'
+                    })
+                  }
+                  className={`p-1.5 rounded flex justify-center ${
+                    selectedElement.fontStyle === 'italic' ? 'bg-white dark:bg-gray-700 shadow-sm text-emerald-500' : ''
+                  }`}
+                  title="Italic"
+                >
+                  <Italic className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() =>
+                    updateElement(activePageIndex, selectedElement.id, {
+                      underline: !selectedElement.underline
+                    })
+                  }
+                  className={`p-1.5 rounded flex justify-center ${
+                    selectedElement.underline ? 'bg-white dark:bg-gray-700 shadow-sm text-emerald-500' : ''
+                  }`}
+                  title="Underline"
+                >
+                  <Underline className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() =>
+                    updateElement(activePageIndex, selectedElement.id, {
+                      linethrough: !selectedElement.linethrough
+                    })
+                  }
+                  className={`p-1.5 rounded flex justify-center ${
+                    selectedElement.linethrough ? 'bg-white dark:bg-gray-700 shadow-sm text-emerald-500' : ''
+                  }`}
+                  title="Strikethrough"
+                >
+                  <Strikethrough className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
 
-            {/* Text Color Picker */}
+            {/* Line Height Slider */}
             <div>
-              <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                Text Color
-              </label>
-              <div className="flex items-center gap-2">
-                <input
-                  type="color"
-                  value={selectedElement.color || '#1A1A1A'}
-                  onChange={(e) => updateElement(activePageIndex, selectedElement.id, { color: e.target.value })}
-                  className="w-8 h-8 rounded border border-gray-300 cursor-pointer"
-                />
-                <span className="text-xs font-mono text-gray-600 dark:text-gray-400">
-                  {selectedElement.color || '#1A1A1A'}
-                </span>
+              <div className="flex items-center justify-between text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                <span>Line Spacing ({selectedElement.lineHeight || 1.3}x)</span>
+              </div>
+              <input
+                type="range"
+                min={10}
+                max={25}
+                value={Math.round((selectedElement.lineHeight || 1.3) * 10)}
+                onChange={(e) => updateElement(activePageIndex, selectedElement.id, { lineHeight: parseFloat((e.target.value / 10).toFixed(1)) })}
+                className="w-full accent-emerald-500"
+              />
+            </div>
+
+            {/* Colors: Text Color & Highlight Background */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                  Text Color
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={selectedElement.color || '#1A1A1A'}
+                    onChange={(e) => updateElement(activePageIndex, selectedElement.id, { color: e.target.value })}
+                    className="w-8 h-8 rounded border border-gray-300 cursor-pointer"
+                  />
+                  <span className="text-[11px] font-mono text-gray-600 dark:text-gray-400 truncate">
+                    {selectedElement.color || '#1A1A1A'}
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-1">
+                  <Highlighter className="w-3 h-3 text-emerald-500" /> Highlight
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={selectedElement.textBackgroundColor || '#FFFFFF'}
+                    onChange={(e) => updateElement(activePageIndex, selectedElement.id, { textBackgroundColor: e.target.value })}
+                    className="w-8 h-8 rounded border border-gray-300 cursor-pointer"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => updateElement(activePageIndex, selectedElement.id, { textBackgroundColor: '' })}
+                    className="text-[10px] text-gray-400 hover:text-gray-600 underline"
+                  >
+                    Clear
+                  </button>
+                </div>
               </div>
             </div>
 

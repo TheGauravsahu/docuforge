@@ -6,6 +6,7 @@ import LandingPage from './pages/LandingPage.jsx';
 import DashboardPage from './pages/DashboardPage.jsx';
 import EditorPage from './pages/EditorPage.jsx';
 import GeneratePage from './pages/GeneratePage.jsx';
+import CreateManualPage from './pages/CreateManualPage.jsx';
 import TemplatesPage from './pages/TemplatesPage.jsx';
 import SettingsPage from './pages/SettingsPage.jsx';
 import AdminPage from './pages/AdminPage.jsx';
@@ -48,6 +49,7 @@ export default function App() {
         {/* Protected User Routes */}
         <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
         <Route path="/generate" element={<ProtectedRoute><GeneratePage /></ProtectedRoute>} />
+        <Route path="/create-manual" element={<ProtectedRoute><CreateManualPage /></ProtectedRoute>} />
         <Route path="/editor/:docId" element={<ProtectedRoute><EditorPage /></ProtectedRoute>} />
         <Route path="/templates" element={<ProtectedRoute><TemplatesPage /></ProtectedRoute>} />
         <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
