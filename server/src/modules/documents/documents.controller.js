@@ -4,6 +4,21 @@ import { documents, templates } from '../../db/schema.js';
 import { uploadToImageKit } from '../../config/imagekit.js';
 import crypto from 'crypto';
 
+// Robust helper to unpack single or double-encoded JSONB objects
+const safeParseJson = (val) => {
+  let res = val;
+  let attempts = 0;
+  while (typeof res === 'string' && attempts < 5) {
+    try {
+      res = JSON.parse(res);
+    } catch (e) {
+      break;
+    }
+    attempts++;
+  }
+  return res && typeof res === 'object' ? res : {};
+};
+
 export const getDocuments = async (req, res) => {
   try {
     const { folderId, search, type } = req.query;
@@ -111,20 +126,33 @@ export const updateDocument = async (req, res) => {
     const { id } = req.params;
     const { title, folderId, status, contentJson } = req.body;
 
+    const existingDocs = await db.select().from(documents).where(
+      and(eq(documents.id, id), eq(documents.ownerId, req.user.id))
+    );
+    const existingDoc = existingDocs[0];
+
+    if (!existingDoc) {
+      return res.status(404).json({ error: 'Document not found' });
+    }
+
+    let finalContentJson = safeParseJson(contentJson);
+    const existingContent = safeParseJson(existingDoc.contentJson);
+
+    // Preserve existing shareSettings if not provided in incoming contentJson payload
+    if (existingContent.shareSettings && !finalContentJson.shareSettings) {
+      finalContentJson.shareSettings = existingContent.shareSettings;
+    }
+
     const [updatedDoc] = await db.update(documents)
       .set({
         ...(title && { title }),
         ...(folderId !== undefined && { folderId }),
         ...(status && { status }),
-        ...(contentJson && { contentJson }),
+        ...(finalContentJson && { contentJson: finalContentJson }),
         updatedAt: new Date(),
       })
       .where(and(eq(documents.id, id), eq(documents.ownerId, req.user.id)))
       .returning();
-
-    if (!updatedDoc) {
-      return res.status(404).json({ error: 'Document not found' });
-    }
 
     res.json({ document: updatedDoc });
   } catch (error) {
@@ -177,7 +205,6 @@ export const updateShareSettings = async (req, res) => {
     const { id } = req.params;
     const { visibility, password } = req.body;
 
-    // visibility: 'PRIVATE' | 'PUBLIC' | 'LINK' | 'PASSWORD'
     const validVisibilities = ['PRIVATE', 'PUBLIC', 'LINK', 'PASSWORD'];
     if (!validVisibilities.includes(visibility)) {
       return res.status(400).json({ error: 'Invalid visibility setting' });
@@ -187,7 +214,6 @@ export const updateShareSettings = async (req, res) => {
       return res.status(400).json({ error: 'Password must be at least 4 characters for password-protected links' });
     }
 
-    // Fetch existing document to ensure ownership
     const docs = await db.select().from(documents).where(
       and(eq(documents.id, id), eq(documents.ownerId, req.user.id))
     );
@@ -196,12 +222,10 @@ export const updateShareSettings = async (req, res) => {
       return res.status(404).json({ error: 'Document not found' });
     }
 
-    // Get or generate share token
-    const existingContent = doc.contentJson || {};
+    const existingContent = safeParseJson(doc.contentJson);
     const existingShare = existingContent.shareSettings || {};
     const shareToken = existingShare.token || crypto.randomBytes(12).toString('hex');
 
-    // Hash password if provided
     let passwordHash = existingShare.passwordHash || null;
     if (visibility === 'PASSWORD' && password && password.trim()) {
       passwordHash = crypto.createHash('sha256').update(password.trim()).digest('hex');
@@ -224,6 +248,8 @@ export const updateShareSettings = async (req, res) => {
       .where(and(eq(documents.id, id), eq(documents.ownerId, req.user.id)))
       .returning();
 
+    console.log(`[ShareSettings] Updated doc ${id} with token ${shareToken} (visibility: ${visibility})`);
+
     res.json({
       shareToken,
       visibility,
@@ -242,12 +268,13 @@ export const getSharedDocument = async (req, res) => {
     const { token } = req.params;
     const { password } = req.query;
 
+    console.log(`[GetSharedDocument] Incoming request for token/id: "${token}"`);
+
     if (!token) {
       return res.status(400).json({ error: 'Share token is required' });
     }
 
-    // Find all documents and filter by share token in contentJson
-    // Using a raw query approach since Drizzle doesn't support jsonb path queries easily
+    // Query all documents
     const allDocs = await db.select({
       id: documents.id,
       title: documents.title,
@@ -257,23 +284,29 @@ export const getSharedDocument = async (req, res) => {
       updatedAt: documents.updatedAt,
     }).from(documents);
 
-    const doc = allDocs.find(
-      (d) => d.contentJson?.shareSettings?.token === token
-    );
+    const doc = allDocs.find((d) => {
+      const cJson = safeParseJson(d.contentJson);
+      return d.id === token || cJson?.shareSettings?.token === token;
+    });
 
     if (!doc) {
+      console.warn(`[GetSharedDocument] ❌ No doc found matching token "${token}". Total docs in DB: ${allDocs.length}`);
       return res.status(404).json({ error: 'Shared document not found or link has been disabled' });
     }
 
-    const share = doc.contentJson.shareSettings;
+    const parsedContent = safeParseJson(doc.contentJson);
+    const share = parsedContent.shareSettings || {};
 
-    // Check visibility
-    if (share.visibility === 'PRIVATE') {
+    // Default visibility to 'LINK' if token matches, unless explicitly marked PRIVATE
+    const activeVisibility = share.visibility || 'LINK';
+    console.log(`[GetSharedDocument] ✅ Doc "${doc.title}" (${doc.id}) found! Active visibility: ${activeVisibility}`);
+
+    if (activeVisibility === 'PRIVATE') {
       return res.status(403).json({ error: 'This document is private' });
     }
 
     // Password protection check
-    if (share.visibility === 'PASSWORD') {
+    if (activeVisibility === 'PASSWORD') {
       if (!password) {
         return res.status(401).json({ error: 'PASSWORD_REQUIRED', message: 'This document is password protected' });
       }
@@ -283,8 +316,8 @@ export const getSharedDocument = async (req, res) => {
       }
     }
 
-    // Return safe document (no share password hash)
-    const safeContentJson = { ...doc.contentJson };
+    // Return safe document (strip password hash)
+    const safeContentJson = { ...parsedContent };
     if (safeContentJson.shareSettings) {
       safeContentJson.shareSettings = {
         visibility: safeContentJson.shareSettings.visibility,
@@ -303,6 +336,7 @@ export const getSharedDocument = async (req, res) => {
       }
     });
   } catch (error) {
+    console.error(`[GetSharedDocument Error]`, error);
     res.status(500).json({ error: error.message });
   }
 };
