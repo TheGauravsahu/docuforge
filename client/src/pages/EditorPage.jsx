@@ -12,6 +12,8 @@ import ExportModal from '../components/editor/ExportModal.jsx';
 import AiGeneratorModal from '../components/editor/AiGeneratorModal.jsx';
 import AiSectionWriterModal from '../components/editor/AiSectionWriterModal.jsx';
 import MediaModal from '../components/editor/MediaModal.jsx';
+import AiDiagramModal from '../components/editor/AiDiagramModal.jsx';
+import ShareModal from '../components/editor/ShareModal.jsx';
 import { useEditorStore } from '../store/useEditorStore.js';
 import api from '../lib/api.js';
 
@@ -25,6 +27,8 @@ export default function EditorPage() {
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
   const [isAiSectionModalOpen, setIsAiSectionModalOpen] = useState(false);
   const [isMediaModalOpen, setIsMediaModalOpen] = useState(false);
+  const [isAiDiagramModalOpen, setIsAiDiagramModalOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [mobileTab, setMobileTab] = useState('canvas'); // 'pages' | 'canvas' | 'inspector'
 
   const { data: docData, isLoading } = useQuery({
@@ -109,6 +113,7 @@ export default function EditorPage() {
         onOpenAiModal={() => setIsAiModalOpen(true)}
         onOpenAiSectionModal={() => setIsAiSectionModalOpen(true)}
         onOpenMediaModal={() => setIsMediaModalOpen(true)}
+        onOpenShareModal={() => setIsShareModalOpen(true)}
       />
 
       {/* Mobile Tab Switcher */}
@@ -157,6 +162,7 @@ export default function EditorPage() {
             onOpenAiModal={() => setIsAiModalOpen(true)}
             onOpenAiSectionModal={() => setIsAiSectionModalOpen(true)}
             onOpenMediaModal={() => setIsMediaModalOpen(true)}
+            onOpenAiDiagramModal={() => setIsAiDiagramModalOpen(true)}
           />
         </div>
       </div>
@@ -181,6 +187,14 @@ export default function EditorPage() {
       <MediaModal
         isOpen={isMediaModalOpen}
         onClose={() => setIsMediaModalOpen(false)}
+      />
+      <AiDiagramModal
+        isOpen={isAiDiagramModalOpen}
+        onClose={() => setIsAiDiagramModalOpen(false)}
+      />
+      <ShareModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
       />
     </div>
   );

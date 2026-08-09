@@ -280,6 +280,39 @@ export const useEditorStore = create(
         });
       },
 
+      updatePageTitle: (pageIndex, newTitle) => {
+        const doc = get().document;
+        if (!doc || !doc.contentJson || !doc.contentJson.pages[pageIndex]) return;
+
+        const newContentJson = JSON.parse(JSON.stringify(doc.contentJson));
+        const page = newContentJson.pages[pageIndex];
+        const oldTitle = page.title;
+        page.title = newTitle;
+
+        // Also update main heading element on canvas if present
+        page.elements.forEach((el) => {
+          if (el.type === 'text' && (el.id?.endsWith('_title') || el.content === oldTitle)) {
+            el.content = newTitle;
+          }
+        });
+
+        // Auto-update Table of Contents (Index page) if present
+        const contentChapters = newContentJson.pages.filter((p) => p.type === 'content');
+        const indexPage = newContentJson.pages.find((p) => p.type === 'index');
+        if (indexPage) {
+          const indexLines = contentChapters
+            .map((ch, idx) => `${idx + 1}. ${ch.title} ................................................................ Page ${idx + 5}`)
+            .join('\n\n');
+          const ind2 = indexPage.elements.find((e) => e.id === 'ind_2');
+          if (ind2) ind2.content = indexLines;
+        }
+
+        set({
+          document: { ...doc, contentJson: newContentJson },
+          isDirty: true
+        });
+      },
+
       undo: () => {
         const { historyIndex, history, document } = get();
         if (historyIndex > 0) {

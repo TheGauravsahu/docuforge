@@ -1,4 +1,4 @@
-import { generateOutlineService, generateFullDocumentModelService, generateSectionService } from './ai.service.js';
+import { generateOutlineService, generateFullDocumentModelService, generateSectionService, generateDiagramService } from './ai.service.js';
 import { db } from '../../config/db.js';
 import { documents, usageLogs, users } from '../../db/schema.js';
 
@@ -87,6 +87,42 @@ export const generateFullDocument = async (req, res) => {
     }
 
     res.status(201).json({ document: newDoc });
+  } catch (error) {
+    handleAiError(res, error);
+  }
+};
+
+export const generateDiagram = async (req, res) => {
+  try {
+    const { prompt, diagramType = 'flowchart', topic = '' } = req.body;
+    if (!prompt || !prompt.trim()) {
+      return res.status(400).json({ error: 'Diagram prompt is required' });
+    }
+
+    const result = await generateDiagramService({
+      prompt: prompt.trim(),
+      diagramType,
+      topic,
+    });
+
+    // Log AI Usage
+    if (req.user) {
+      await db.insert(usageLogs).values({
+        id: `log_diag_${Date.now()}`,
+        userId: req.user.id,
+        action: 'AI_DIAGRAM',
+        metadata: { prompt: prompt.substring(0, 100), diagramType },
+        createdAt: new Date(),
+      }).catch(() => {});
+    }
+
+    res.json({
+      diagram: {
+        dataUrl: result.dataUrl,
+        svgCode: result.svgCode,
+        diagramType: result.diagramType,
+      }
+    });
   } catch (error) {
     handleAiError(res, error);
   }

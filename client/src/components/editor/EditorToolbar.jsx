@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  ArrowLeft, Undo2, Redo2, Type, Download,
+  ArrowLeft, Undo2, Redo2, Type, Download, Share2,
   Save, CheckCircle2, Circle, ZoomIn, ZoomOut, Image as ImageIcon
 } from 'lucide-react';
 import { useEditorStore } from '../../store/useEditorStore.js';
@@ -26,6 +26,7 @@ const FONT_OPTIONS = [
 export default function EditorToolbar({
   onOpenExportModal,
   onOpenMediaModal,
+  onOpenShareModal,
 }) {
   const navigate = useNavigate();
   const {
@@ -271,6 +272,17 @@ export default function EditorToolbar({
           <Save className="w-3.5 h-3.5" />
           {isSaving ? 'Saving...' : 'Save'}
         </button>
+
+        {onOpenShareModal && (
+          <button
+            onClick={onOpenShareModal}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 text-[13px] font-semibold rounded-xl transition-opacity hover:opacity-90 border"
+            style={{ backgroundColor: 'var(--surface-2)', color: 'var(--text-primary)', borderColor: 'var(--border)' }}
+          >
+            <Share2 className="w-3.5 h-3.5 text-blue-600" />
+            Share
+          </button>
+        )}
 
         <button
           onClick={onOpenExportModal}

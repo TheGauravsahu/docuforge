@@ -11,6 +11,7 @@ import TemplatesPage from './pages/TemplatesPage.jsx';
 import SettingsPage from './pages/SettingsPage.jsx';
 import AdminPage from './pages/AdminPage.jsx';
 import AuthPage from './pages/AuthPage.jsx';
+import SharedViewPage from './pages/SharedViewPage.jsx';
 import NotFoundPage from './pages/NotFoundPage.jsx';
 
 import ProtectedRoute from './components/layout/ProtectedRoute.jsx';
@@ -45,6 +46,7 @@ export default function App() {
         {/* Public */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/auth" element={<AuthPage />} />
+        <Route path="/p/:token" element={<SharedViewPage />} />
 
         {/* Protected User Routes */}
         <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />

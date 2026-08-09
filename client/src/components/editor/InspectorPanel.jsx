@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sliders, Trash2, AlignLeft, AlignCenter, AlignRight, Bold, Italic, Underline, Strikethrough, Highlighter, Type, Sparkles, GraduationCap, Wand2, ChevronRight, Image as ImageIcon } from 'lucide-react';
+import { Sliders, Trash2, AlignLeft, AlignCenter, AlignRight, Bold, Italic, Underline, Strikethrough, Highlighter, Type, Sparkles, GraduationCap, Wand2, ChevronRight, Image as ImageIcon, GitBranch } from 'lucide-react';
 import { useEditorStore } from '../../store/useEditorStore.js';
 
 const FONT_OPTIONS = [
@@ -21,7 +21,8 @@ export default function InspectorPanel({
   onOpenPlaceholderModal,
   onOpenAiModal,
   onOpenAiSectionModal,
-  onOpenMediaModal
+  onOpenMediaModal,
+  onOpenAiDiagramModal
 }) {
   const { document, activePageIndex, selectedElementId, updateElement, deleteElement, updateTheme } = useEditorStore();
 
@@ -504,6 +505,24 @@ export default function InspectorPanel({
             <span className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-emerald-500" />
               AI Rewrite & Polish
+            </span>
+            <ChevronRight className="w-3.5 h-3.5" style={{ color: 'var(--text-muted)' }} />
+          </button>
+
+          <button
+            onClick={onOpenAiDiagramModal}
+            className="w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-[12px] font-semibold transition-colors border text-left"
+            style={{
+              backgroundColor: 'var(--surface-2)',
+              borderColor: 'var(--border)',
+              color: 'var(--text-primary)',
+            }}
+            onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--surface-1)'}
+            onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--surface-2)'}
+          >
+            <span className="flex items-center gap-2">
+              <GitBranch className="w-4 h-4" style={{ color: '#2B4C7E' }} />
+              AI Diagram Generator
             </span>
             <ChevronRight className="w-3.5 h-3.5" style={{ color: 'var(--text-muted)' }} />
           </button>

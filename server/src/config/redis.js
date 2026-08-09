@@ -5,18 +5,50 @@ import { ENV } from './env.js';
 const memoryCache = new Map();
 
 let redisClient = null;
-if (ENV.REDIS_URL || process.env.REDIS_HOST) {
+
+const formatRedisUrl = (urlStr) => {
+  if (!urlStr) return null;
+  let cleanUrl = urlStr.trim().replace(/^["']|["']$/g, '');
+  if (cleanUrl.includes('redis-cli')) {
+    const urlMatch = cleanUrl.match(/(rediss?:\/\/[^\s"']+)/);
+    if (urlMatch) cleanUrl = urlMatch[1];
+  }
+  if (cleanUrl.includes('upstash.io') && cleanUrl.startsWith('redis://')) {
+    cleanUrl = cleanUrl.replace('redis://', 'rediss://');
+  }
+  return cleanUrl;
+};
+
+const sanitizedUrl = formatRedisUrl(ENV.REDIS_URL);
+
+if (sanitizedUrl || process.env.REDIS_HOST) {
   try {
-    redisClient = new Redis(ENV.REDIS_URL || {
-      host: process.env.REDIS_HOST || '127.0.0.1',
-      port: process.env.REDIS_PORT || 6379,
-      lazyConnect: true,
+    const isTlsRequired = sanitizedUrl ? (sanitizedUrl.startsWith('rediss://') || sanitizedUrl.includes('upstash.io')) : false;
+    const redisOptions = {
+      maxRetriesPerRequest: 3,
+      retryStrategy: (times) => (times > 3 ? null : Math.min(times * 200, 1000)),
+      ...(isTlsRequired ? { tls: { rejectUnauthorized: false } } : {}),
+    };
+
+    if (sanitizedUrl) {
+      redisClient = new Redis(sanitizedUrl, redisOptions);
+    } else {
+      redisClient = new Redis({
+        host: process.env.REDIS_HOST || '127.0.0.1',
+        port: process.env.REDIS_PORT || 6379,
+        ...redisOptions,
+      });
+    }
+
+    redisClient.on('connect', () => {
+      console.log('✅ [Redis] Connected successfully!');
     });
+
     redisClient.on('error', (err) => {
-      console.warn('[Redis] Connection error, using memory cache fallback:', err.message);
+      console.warn('[Redis] Connection warning, using memory cache fallback:', err.message);
     });
   } catch (err) {
-    console.warn('[Redis] Failed to initialize, using memory cache fallback');
+    console.warn('[Redis] Failed to initialize, using memory cache fallback:', err.message);
   }
 }
 
