@@ -69,6 +69,15 @@ const usageLogs = pgTable('usage_logs', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
+const noteAssets = pgTable('note_assets', {
+  id: text('id').primaryKey(),
+  tag: text('tag').notNull().unique(),
+  category: text('category').notNull(),
+  imagekitUrl: text('imagekit_url').notNull(),
+  labelPoints: jsonb('label_points'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
 module.exports = {
   roleEnum,
   docTypeEnum,
@@ -79,5 +88,6 @@ module.exports = {
   documentVersions,
   documentExports,
   templates,
-  usageLogs
+  usageLogs,
+  noteAssets,
 };

@@ -21,9 +21,66 @@ const generateContentWithFallback = async (prompt, config = { responseMimeType: 
   return null;
 };
 
-export const generateSectionService = async ({ title, topic = '' }) => {
+// ─── GRADE / CLASS LEVEL PROMPT TUNER ──────────────────────────────────────────
+export const getGradePromptInstructions = (targetClass = '') => {
+  const c = (targetClass || '').toString().toLowerCase().trim();
+
+  if (c.includes('9') || c.includes('ix') || c.includes('10') || c.includes('x') || c.includes('secondary')) {
+    return `
+TARGET AUDIENCE & GRADE LEVEL: Secondary School (Class 9th & 10th / Grade 9-10).
+CRITICAL LEVEL-SPECIFIC INSTRUCTIONS:
+- Use SIMPLE, CLEAR, and EASY-TO-UNDERSTAND language tailored specifically for 14-16 year old school students.
+- Explain all scientific, mathematical, and historical concepts with straightforward explanations, relatable everyday analogies, and clear step-by-step descriptions.
+- Avoid overly dense university-level jargon, advanced calculus, or graduate-level derivations. Keep formulas simple and standard (matching NCERT Class 9/10 level).
+- Keep paragraphs crisp, engaging, and structured with clean bullet points where helpful.`;
+  }
+
+  if (c.includes('6') || c.includes('7') || c.includes('8') || c.includes('middle')) {
+    return `
+TARGET AUDIENCE & GRADE LEVEL: Middle School (Class 6th - 8th / Grade 6-8).
+CRITICAL LEVEL-SPECIFIC INSTRUCTIONS:
+- Use VERY SIMPLE, engaging, and friendly language for young school students (11-13 years old).
+- Focus on basic definitions, interesting real-life observations, fun facts, and visual descriptions.
+- Absolutely NO complicated mathematical derivations or heavy technical jargon.`;
+  }
+
+  if (c.includes('11') || c.includes('xi') || c.includes('12') || c.includes('xii') || c.includes('senior')) {
+    return `
+TARGET AUDIENCE & GRADE LEVEL: Senior Secondary (Class 11th & 12th / High School).
+CRITICAL LEVEL-SPECIFIC INSTRUCTIONS:
+- Use formal academic language matching Class 11 & 12 NCERT / Board Exam standards.
+- Include proper scientific principles, theoretical derivations, governing equations, and structured experimental setup procedures.
+- Maintain academic rigor with clear explanations suitable for senior high school students.`;
+  }
+
+  if (c.includes('college') || c.includes('undergrad') || c.includes('university') || c.includes('engineering') || c.includes('bachelor')) {
+    return `
+TARGET AUDIENCE & GRADE LEVEL: Undergraduate / University / Engineering Level.
+CRITICAL LEVEL-SPECIFIC INSTRUCTIONS:
+- Use formal university-level prose, advanced academic terminology, and engineering formulations.
+- Include detailed mathematical derivations, analytical observations, research methodology, and practical industrial case studies.`;
+  }
+
+  if (c.includes('postgrad') || c.includes('master') || c.includes('research') || c.includes('phd')) {
+    return `
+TARGET AUDIENCE & GRADE LEVEL: Postgraduate / Advanced Academic Research Level.
+CRITICAL LEVEL-SPECIFIC INSTRUCTIONS:
+- Use rigorous academic literature style, advanced analytical frameworks, methodology, and formal citations.`;
+  }
+
+  return `
+TARGET AUDIENCE & GRADE LEVEL: Standard School Academic Level (${targetClass || 'High School'}).
+CRITICAL LEVEL-SPECIFIC INSTRUCTIONS:
+- Keep explanations clear, structured, and age-appropriate with relevant formulas and real-world examples.`;
+};
+
+export const generateSectionService = async ({ title, topic = '', targetClass = '' }) => {
+  const gradePrompt = getGradePromptInstructions(targetClass);
+
   const prompt = `You are an expert academic author.
-Generate detailed academic page content for a new section / chapter titled: "${title}" ${topic ? `for the project topic: "${topic}"` : ''}.
+Generate detailed academic page content for a new section / chapter titled: "${title}" ${topic ? `for the project topic: "${topic}"` : ''} ${targetClass ? `(Target Grade Level: ${targetClass})` : ''}.
+
+${gradePrompt}
 
 The content MUST be specifically about "${title}" related to "${topic || title}". Do NOT write about any other subject.
 
@@ -53,19 +110,23 @@ Respond ONLY with valid JSON in the following format:
     title,
     subtopics: ['Core Principles & Theory', 'Key Concepts & Framework', 'Applications & Significance'],
     bodyParagraphs: [
-      `This section provides a detailed academic analysis of ${title}. ${topic ? `Within the context of ${topic}, this chapter` : 'This chapter'} explores the foundational principles, theoretical underpinnings, and practical relevance of the subject matter.`,
-      `Theoretical Framework & Key Concepts:\nThe study of ${title} involves understanding its core mechanisms, governing principles, and relationship to broader academic fields. Researchers and scholars have identified several critical dimensions that define this domain and contribute to its academic and practical importance.`,
-      `Practical Applications & Academic Significance:\nThe insights gained from studying ${title} have far-reaching implications in both theoretical and applied contexts. By systematically analyzing the evidence and data, we can draw meaningful conclusions about the significance of this topic and its contribution to the broader field of knowledge.`
+      `This section provides a detailed scientific analysis of ${title}. ${topic ? `Within the context of ${topic}, this chapter` : 'This chapter'} explores the foundational principles, theoretical underpinnings, and practical relevance of the subject matter suitable for ${targetClass || 'academic study'}.`,
+      `Theoretical Framework & Key Concepts:\nThe study of ${title} involves understanding its core mechanisms, governing principles, and relationship to broader academic fields. Researchers and scholars have identified several critical dimensions that define this domain and contribute to its academic importance.`,
+      `Practical Applications & Academic Significance:\nThe insights gained from studying ${title} have far-reaching implications in both theoretical and applied contexts. By systematically analyzing the evidence and data, we can draw meaningful conclusions about the significance of this topic.`
     ]
   };
 };
 
-export const generateOutlineService = async ({ topic, docType = 'PDF', referenceText = '' }) => {
-  const prompt = `You are an expert academic document author.
-Given the topic: "${topic}" ${referenceText ? `and reference text: "${referenceText.substring(0, 500)}"` : ''}.
+export const generateOutlineService = async ({ topic, docType = 'PDF', referenceText = '', targetClass = '' }) => {
+  const gradePrompt = getGradePromptInstructions(targetClass);
+
+  const prompt = `You are an expert academic curriculum and document author.
+Given the topic: "${topic}" ${targetClass ? `for target grade level: "${targetClass}"` : ''} ${referenceText ? `and reference text: "${referenceText.substring(0, 500)}"` : ''}.
 Generate a structured JSON outline for a high-quality academic project / presentation / report (${docType}).
 
-The outline MUST be specifically tailored to the topic "${topic}". All chapter titles and subtopics MUST be directly relevant to "${topic}".
+${gradePrompt}
+
+The outline MUST be specifically tailored to the topic "${topic}" and appropriate for ${targetClass || 'the target grade level'} in terms of complexity, number of chapters, and topic depth.
 
 Respond ONLY with valid JSON in the following format:
 {
@@ -79,8 +140,8 @@ Respond ONLY with valid JSON in the following format:
     },
     {
       "chapterNumber": 2,
-      "title": "Theoretical Framework & Governing Laws of ${topic}",
-      "subtopics": ["Core Concepts", "Mathematical/Scientific Derivations", "Working Principle & Mechanisms"]
+      "title": "Theoretical Framework & Governing Principles of ${topic}",
+      "subtopics": ["Core Concepts", "Key Derivations", "Working Principle & Mechanisms"]
     },
     {
       "chapterNumber": 3,
@@ -89,12 +150,12 @@ Respond ONLY with valid JSON in the following format:
     },
     {
       "chapterNumber": 4,
-      "title": "Quantitative Observations & Data Analysis of ${topic}",
+      "title": "Quantitative Observations & Analysis of ${topic}",
       "subtopics": ["Tabulated Measurements", "Calculations & Error Analysis", "Graphical Trends & Interpretation"]
     },
     {
       "chapterNumber": 5,
-      "title": "Applications & Engineering Significance of ${topic}",
+      "title": "Applications & Practical Significance of ${topic}",
       "subtopics": ["Modern Technological Applications", "Performance & Efficiency", "Safety & Environmental Considerations"]
     },
     {
@@ -191,9 +252,11 @@ export const generateFullDocumentModelService = async ({
   docType = 'PDF',
   templateId = 'tpl_physics_proj',
   placeholders = {},
-  outline = null
+  outline = null,
+  targetClass = ''
 }) => {
-  const chosenOutline = outline || (await generateOutlineService({ topic, docType }));
+  const effectiveClass = targetClass || placeholders.class || 'Class X';
+  const chosenOutline = outline || (await generateOutlineService({ topic, docType, targetClass: effectiveClass }));
 
   const schoolName = (placeholders.school_name && placeholders.school_name.trim())
     ? placeholders.school_name.trim()
@@ -213,38 +276,36 @@ export const generateFullDocumentModelService = async ({
   const subjectName = (placeholders.subject && placeholders.subject.trim())
     ? placeholders.subject.trim()
     : 'Science & Technology';
-  const className = (placeholders.class && placeholders.class.trim())
-    ? placeholders.class.trim()
-    : 'Class XII';
+  const className = effectiveClass;
 
   const template = defaultTemplates[templateId] || defaultTemplates.tpl_physics_proj;
   const theme = template.theme;
 
-  // ─── Generate AI content for ALL chapters in parallel ───
-  console.log(`[AI] Generating unique content for ${chosenOutline.chapters.length} chapters in parallel...`);
+  // Generate AI content for ALL chapters in parallel, customized for grade level!
+  console.log(`[AI] Generating grade-aligned content for ${chosenOutline.chapters.length} chapters (${effectiveClass})...`);
   const chapterContents = await Promise.all(
     chosenOutline.chapters.map(async (ch) => {
       try {
         const sec = await generateSectionService({
           title: ch.title,
           topic: chosenOutline.title || topic,
+          targetClass: effectiveClass,
         });
         return sec;
       } catch (err) {
-        console.warn(`[AI] Chapter "${ch.title}" content generation failed, using topic-aware fallback.`);
+        console.warn(`[AI] Chapter "${ch.title}" content generation failed, using fallback.`);
         return {
           title: ch.title,
           subtopics: ch.subtopics || [],
           bodyParagraphs: [
-            `This chapter explores ${ch.title} within the context of ${chosenOutline.title || topic}. The foundational concepts and theoretical principles of this subject are essential for a comprehensive understanding of the broader project topic.`,
-            `Key Concepts & Framework:\nThe study of ${ch.title} encompasses multiple dimensions of academic inquiry. By examining the core principles, methodologies, and empirical findings associated with this topic, students can develop a thorough grasp of how these elements interconnect and contribute to the field.`,
-            `Practical Applications & Conclusions:\nThe knowledge gained from studying ${ch.title} has direct applications in real-world scenarios. Through systematic analysis and experimentation, we can validate the theoretical predictions and draw meaningful conclusions about the practical significance of these findings.`
+            `This chapter explores ${ch.title} within the context of ${chosenOutline.title || topic}. The foundational concepts and theoretical principles of this subject are essential for a comprehensive understanding of the broader topic at the ${effectiveClass} level.`,
+            `Key Concepts & Principles:\nThe study of ${ch.title} encompasses key theoretical dimensions. By examining the core principles, methodologies, and empirical findings, students can develop a clear grasp of the subject matter.`,
+            `Practical Applications & Conclusion:\nThe knowledge gained from studying ${ch.title} has direct practical applications. Through systematic analysis, we can draw meaningful conclusions about the practical significance of these findings.`
           ]
         };
       }
     })
   );
-  console.log(`[AI] Chapter content generation complete.`);
 
   const pages = [];
 
@@ -272,7 +333,7 @@ export const generateFullDocumentModelService = async ({
       { id: 'cert_1', type: 'text', content: 'BONAFIDE CERTIFICATE', fontSize: 22, fontWeight: 'bold', align: 'center', x: 45, y: 70, width: 610, color: theme.primaryColor },
       { id: 'cert_sub', type: 'text', content: `DEPARTMENT OF ${subjectName.toUpperCase()} — ${schoolName.toUpperCase()}`, fontSize: 12, fontWeight: 'bold', align: 'center', x: 45, y: 110, width: 610, color: theme.accentColor },
       { id: 'cert_2', type: 'text', content: `This is to certify that ${studentName}, a bonafide student of ${className} holding Roll Number ${rollNumber} at ${schoolName}, has successfully completed the investigatory project entitled:\n\n"${chosenOutline.title}"\n\nduring the academic session ${academicYear} in partial fulfillment of the requirements for the ${subjectName} curriculum as prescribed by the Board of Examination.`, fontSize: 13, align: 'left', x: 45, y: 170, width: 610, color: '#222222' },
-      { id: 'cert_3', type: 'text', content: `The student has exhibited deep scientific curiosity, analytical rigor, and diligence throughout the experimental work and report preparation under my direct supervision. The results documented herein represent authentic experimental data and theoretical derivations.`, fontSize: 13, align: 'left', x: 45, y: 340, width: 610, color: '#333333' },
+      { id: 'cert_3', type: 'text', content: `The student has exhibited deep scientific curiosity, diligence, and analytical rigor throughout the work under my direct supervision. The results documented herein represent authentic data and derivations.`, fontSize: 13, align: 'left', x: 45, y: 340, width: 610, color: '#333333' },
       { id: 'cert_4', type: 'text', content: `___________________________              ___________________________\nTeacher-in-Charge                          Principal / Head of Institution\n(${guideTeacher})                          (${schoolName})\n\n\n___________________________              ___________________________\nInternal Examiner Signature                External Examiner Signature`, fontSize: 12, align: 'left', x: 45, y: 520, width: 610, color: '#1A1A1A' }
     ]
   });
@@ -284,13 +345,13 @@ export const generateFullDocumentModelService = async ({
     title: 'Declaration',
     elements: [
       { id: 'decl_1', type: 'text', content: 'CANDIDATE DECLARATION', fontSize: 20, fontWeight: 'bold', align: 'center', x: 45, y: 70, width: 610, color: theme.primaryColor },
-      { id: 'decl_2', type: 'text', content: `I, ${studentName}, student of ${className} (Roll Number: ${rollNumber}) at ${schoolName}, hereby declare that the investigatory project titled:\n\n"${chosenOutline.title}"\n\nis an authentic record of my own research and experimental work carried out under the academic guidance and supervision of ${guideTeacher}.\n\nI further declare that this report has not been previously submitted to any other school, university, board, or institution for the award of any degree, diploma, or certificate. All literature sources, mathematical formulations, and diagrams cited herein have been explicitly acknowledged.`, fontSize: 13, align: 'left', x: 45, y: 150, width: 610, color: '#222222' },
+      { id: 'decl_2', type: 'text', content: `I, ${studentName}, student of ${className} (Roll Number: ${rollNumber}) at ${schoolName}, hereby declare that the investigatory project titled:\n\n"${chosenOutline.title}"\n\nis an authentic record of my own research and experimental work carried out under the academic guidance and supervision of ${guideTeacher}.\n\nI further declare that this report has not been previously submitted for the award of any degree, diploma, or certificate. All literature sources and formulations cited herein have been explicitly acknowledged.`, fontSize: 13, align: 'left', x: 45, y: 150, width: 610, color: '#222222' },
       { id: 'decl_3', type: 'text', content: `Date: ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}\nPlace: ${schoolName}`, fontSize: 12, align: 'left', x: 45, y: 440, width: 610, color: '#444444' },
       { id: 'decl_4', type: 'text', content: `___________________________\nCandidate Signature\n(${studentName})\nRoll No: ${rollNumber} | ${className}`, fontSize: 12, align: 'left', x: 45, y: 530, width: 610, color: '#1A1A1A' }
     ]
   });
 
-  // 4. Index Page (Table of Contents)
+  // 4. Index Page
   const indexLines = chosenOutline.chapters.map((ch, idx) => `${ch.chapterNumber}. ${ch.title} ................................................................ Page ${idx + 5}`).join('\n\n');
   pages.push({
     id: `p_index_${Date.now()}`,
@@ -303,7 +364,7 @@ export const generateFullDocumentModelService = async ({
     ]
   });
 
-  // 5. Chapter Content Pages — using AI-generated unique content per chapter
+  // 5. Chapter Content Pages
   chosenOutline.chapters.forEach((ch, idx) => {
     const aiContent = chapterContents[idx];
     const subtopicList = (aiContent?.subtopics || ch.subtopics || []).map((s) => `• ${s}`).join('\n');
@@ -341,7 +402,7 @@ export const generateFullDocumentModelService = async ({
         {
           id: `ch_${idx}_body1`,
           type: 'text',
-          content: bodyParagraphs[0] || `Introduction to ${ch.title}:\nThis chapter provides a comprehensive overview of ${ch.title} in the context of ${chosenOutline.title || topic}. Understanding these foundational principles is essential for both theoretical knowledge and practical applications.`,
+          content: bodyParagraphs[0] || `Introduction to ${ch.title}:\nThis chapter provides an overview of ${ch.title} in the context of ${chosenOutline.title || topic}. Understanding these foundational principles is essential for theoretical knowledge and practical applications.`,
           fontSize: 13,
           align: 'left',
           x: 45,
@@ -352,7 +413,7 @@ export const generateFullDocumentModelService = async ({
         {
           id: `ch_${idx}_body2`,
           type: 'text',
-          content: bodyParagraphs[1] || `Theoretical Framework & Key Concepts:\nThe study of ${ch.title} encompasses multiple dimensions of academic inquiry. By examining the core principles, methodologies, and empirical findings, students can develop a thorough grasp of the subject matter and its broader implications.`,
+          content: bodyParagraphs[1] || `Theoretical Principles & Key Concepts:\nThe study of ${ch.title} encompasses fundamental scientific concepts. By examining core principles and empirical findings, students can develop a thorough grasp of the subject.`,
           fontSize: 13,
           align: 'left',
           x: 45,
@@ -363,7 +424,7 @@ export const generateFullDocumentModelService = async ({
         {
           id: `ch_${idx}_body3`,
           type: 'text',
-          content: bodyParagraphs[2] || `Practical Applications & Conclusions:\nThe knowledge gained from studying ${ch.title} has direct applications in real-world scenarios. Through systematic analysis, we can validate the theoretical predictions and draw meaningful conclusions about the significance of these findings.`,
+          content: bodyParagraphs[2] || `Applications & Conclusions:\nThe knowledge gained from studying ${ch.title} has direct real-world applications. Through systematic analysis, we can draw meaningful conclusions about the practical significance of these findings.`,
           fontSize: 13,
           align: 'left',
           x: 45,
@@ -382,7 +443,7 @@ export const generateFullDocumentModelService = async ({
     title: 'Bibliography',
     elements: [
       { id: 'bib_1', type: 'text', content: 'BIBLIOGRAPHY & ACADEMIC REFERENCES', fontSize: 20, fontWeight: 'bold', align: 'center', x: 45, y: 70, width: 610, color: theme.primaryColor },
-      { id: 'bib_2', type: 'text', content: `1. NCERT ${subjectName} Textbook for ${className} (Part I & II) — National Council of Educational Research and Training.\n\n2. Fundamentals of ${subjectName} — Standard Reference Textbook (Latest Edition, Academic Publishers).\n\n3. Concepts and Principles of ${topic} — Peer-Reviewed Academic Journal Articles.\n\n4. Research Methodology & Scientific Investigation — Standard Academic Reference.\n\n5. IEEE Educational Publications & Peer-Reviewed Scientific Journals on ${subjectName}.\n\n6. National Science Digital Library (NSDL) & MIT OpenCourseWare Repositories.`, fontSize: 13, align: 'left', x: 45, y: 150, width: 610, color: '#333333' }
+      { id: 'bib_2', type: 'text', content: `1. NCERT ${subjectName} Textbook for ${className} — National Council of Educational Research and Training.\n\n2. Fundamentals of ${subjectName} — Standard Reference Textbook (Latest Grade-Aligned Edition).\n\n3. Concepts and Principles of ${topic} — Peer-Reviewed Educational Resources.\n\n4. Scientific Inquiry & Laboratory Methodology — Standard School Academic Reference.\n\n5. IEEE Educational Publications & Peer-Reviewed Science Journals.\n\n6. National Science Digital Library (NSDL) & Educational OpenCourseWare.`, fontSize: 13, align: 'left', x: 45, y: 150, width: 610, color: '#333333' }
     ]
   });
 
@@ -486,13 +547,9 @@ CRITICAL SVG REQUIREMENTS:
     try {
       const responseText = await generateContentWithFallback(svgPrompt, { responseMimeType: 'text/plain' });
       if (responseText) {
-        // Extract SVG from the response
         let svgCode = responseText.trim();
-
-        // Remove any markdown code blocks if present
         svgCode = svgCode.replace(/```(?:svg|xml|html)?\n?/gi, '').replace(/```/g, '').trim();
 
-        // Ensure it starts with <svg
         const svgStart = svgCode.indexOf('<svg');
         const svgEnd = svgCode.lastIndexOf('</svg>');
         if (svgStart !== -1 && svgEnd !== -1) {
@@ -500,7 +557,6 @@ CRITICAL SVG REQUIREMENTS:
         }
 
         if (svgCode.startsWith('<svg')) {
-          // Convert SVG to base64 data URL
           const base64 = Buffer.from(svgCode, 'utf-8').toString('base64');
           return {
             svgCode,
@@ -514,7 +570,6 @@ CRITICAL SVG REQUIREMENTS:
     }
   }
 
-  // Fallback: use simple prebuilt SVG based on diagram type
   const fallbackFn = DIAGRAM_FALLBACKS[diagramType] || DIAGRAM_FALLBACKS.flowchart;
   const fallbackSvg = fallbackFn(prompt);
   const base64 = Buffer.from(fallbackSvg, 'utf-8').toString('base64');

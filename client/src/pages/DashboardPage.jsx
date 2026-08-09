@@ -5,13 +5,14 @@ import { toast } from 'sonner';
 import {
   FileText, Search, Sparkles, Trash2, Clock,
   LayoutGrid, List, Wand2, ArrowRight, FileCheck,
-  FileClock, Cpu, FolderOpen, PenTool
+  FileClock, Cpu, FolderOpen, PenTool, Eye, X, Edit3
 } from 'lucide-react';
 import DashboardLayout from '../components/layout/DashboardLayout.jsx';
 import StatCard from '../components/ui/StatCard.jsx';
 import EmptyState from '../components/ui/EmptyState.jsx';
 import ProgressDonut from '../components/ui/ProgressDonut.jsx';
 import Badge from '../components/ui/Badge.jsx';
+import DocumentPreviewModal from '../components/ui/DocumentPreviewModal.jsx';
 import api from '../lib/api.js';
 import { useFolderStore } from '../store/useFolderStore.js';
 import { useEditorStore } from '../store/useEditorStore.js';
@@ -29,6 +30,7 @@ export default function DashboardPage() {
   const [newFolderName, setNewFolderName] = useState('');
   const [isFolderModalOpen, setIsFolderModalOpen] = useState(false);
   const [viewMode, setViewMode] = useState('grid');
+  const [previewDoc, setPreviewDoc] = useState(null);
 
   const { data: foldersData } = useQuery({
     queryKey: ['folders'],
@@ -66,14 +68,67 @@ export default function DashboardPage() {
     onError: (err) => toast.error(err.response?.data?.error || 'Failed to delete'),
   });
 
+  const updateTitleMutation = useMutation({
+    mutationFn: async ({ id, title }) => (await api.put(`/documents/${id}`, { title })).data.document,
+    onSuccess: () => {
+      toast.success('Document title updated');
+      queryClient.invalidateQueries({ queryKey: ['documents'] });
+      setEditingDocId(null);
+    },
+    onError: (err) => toast.error(err.response?.data?.error || 'Failed to update title'),
+  });
+
+  const [editingDocId, setEditingDocId] = useState(null);
+  const [editingTitle, setEditingTitle] = useState('');
+
+  const handleStartTitleEdit = (e, doc) => {
+    e.stopPropagation();
+    setEditingDocId(doc.id);
+    setEditingTitle(doc.title);
+  };
+
+  const handleSaveTitleEdit = (docId) => {
+    if (editingTitle.trim()) {
+      updateTitleMutation.mutate({ id: docId, title: editingTitle.trim() });
+    } else {
+      setEditingDocId(null);
+    }
+  };
+
+  const handleTitleKeyDown = (e, docId) => {
+    if (e.key === 'Enter') {
+      handleSaveTitleEdit(docId);
+    } else if (e.key === 'Escape') {
+      setEditingDocId(null);
+    }
+  };
+
   const handleOpenDocument = (doc) => {
-    setDocument(doc);
-    navigate(`/editor/${doc.id}`);
+    if (doc.type === 'NOTES') {
+      navigate(`/notes/editor/${doc.id}`);
+    } else {
+      setDocument(doc);
+      navigate(`/editor/${doc.id}`);
+    }
   };
 
   const filteredDocs = documents.filter((doc) => {
-    const matchesSearch = doc.title.toLowerCase().includes(searchQuery.toLowerCase());
+    const q = searchQuery.toLowerCase().trim();
     const matchesType = selectedType === 'ALL' || doc.type === selectedType;
+
+    if (!q) return matchesType;
+
+    const titleMatches = doc.title?.toLowerCase().includes(q);
+    const typeMatches = doc.type?.toLowerCase().includes(q);
+    const statusMatches = doc.status?.toLowerCase().includes(q);
+    const topicMatches = doc.contentJson?.placeholders?.topic_title?.toLowerCase().includes(q) ||
+                         doc.contentJson?.outline?.title?.toLowerCase().includes(q);
+    const chapterMatches = doc.contentJson?.pages?.some(p => p.title?.toLowerCase().includes(q));
+    const schoolMatches = doc.contentJson?.placeholders?.school_name?.toLowerCase().includes(q) ||
+                          doc.contentJson?.placeholders?.student_name?.toLowerCase().includes(q) ||
+                          doc.contentJson?.placeholders?.class?.toLowerCase().includes(q);
+
+    const matchesSearch = titleMatches || typeMatches || statusMatches || topicMatches || chapterMatches || schoolMatches;
     return matchesSearch && matchesType;
   });
 
@@ -101,6 +156,13 @@ export default function DashboardPage() {
           </div>
 
           <div className="flex items-center gap-2.5 flex-wrap">
+            <button
+              onClick={() => navigate('/notes/new')}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-semibold text-white bg-emerald-700 hover:bg-emerald-800 shadow-md transition-all flex-shrink-0"
+            >
+              <PenTool className="w-4 h-4 text-emerald-300" />
+              Handwritten Notes
+            </button>
             <button
               onClick={() => navigate('/create-manual')}
               className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-semibold transition-colors border flex-shrink-0"
@@ -159,16 +221,24 @@ export default function DashboardPage() {
                   <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
                   <input
                     type="text"
-                    placeholder="Search..."
+                    placeholder="Search titles, topics, chapters..."
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
-                    className="pl-9 pr-3 py-2 rounded-xl text-[13px] w-48 outline-none border"
+                    className="pl-9 pr-8 py-2 rounded-xl text-[13px] w-56 sm:w-64 outline-none border transition-all"
                     style={{
                       backgroundColor: 'var(--surface-1)',
-                      borderColor: 'var(--border)',
+                      borderColor: searchQuery ? 'var(--primary)' : 'var(--border)',
                       color: 'var(--text-primary)',
                     }}
                   />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-400"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
                 </div>
 
                 {/* Type filter */}
@@ -239,26 +309,64 @@ export default function DashboardPage() {
                     onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
                   >
                     <div className="flex items-start justify-between gap-2">
-                      <h3 className="text-[14px] font-semibold leading-snug line-clamp-2" style={{ color: 'var(--text-primary)' }}>
-                        {doc.title}
-                      </h3>
-                      <button
-                        onClick={e => { e.stopPropagation(); deleteDocMutation.mutate(doc.id); }}
-                        className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg transition-all flex-shrink-0"
-                        style={{ color: 'var(--text-muted)' }}
-                        onMouseEnter={e => { e.currentTarget.style.color = 'var(--danger)'; e.currentTarget.style.backgroundColor = '#FEE2E2'; }}
-                        onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.backgroundColor = 'transparent'; }}
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                      {editingDocId === doc.id ? (
+                        <input
+                          type="text"
+                          autoFocus
+                          value={editingTitle}
+                          onClick={e => e.stopPropagation()}
+                          onChange={e => setEditingTitle(e.target.value)}
+                          onBlur={() => handleSaveTitleEdit(doc.id)}
+                          onKeyDown={e => handleTitleKeyDown(e, doc.id)}
+                          className="w-full text-[13px] font-semibold px-2 py-1 rounded-lg border outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                          style={{ borderColor: 'var(--primary)' }}
+                        />
+                      ) : (
+                        <h3 className="text-[14px] font-semibold leading-snug line-clamp-2" style={{ color: 'var(--text-primary)' }}>
+                          {doc.title}
+                        </h3>
+                      )}
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        <button
+                          onClick={e => handleStartTitleEdit(e, doc)}
+                          className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg transition-all"
+                          style={{ color: 'var(--text-muted)' }}
+                          onMouseEnter={e => { e.currentTarget.style.color = 'var(--primary)'; e.currentTarget.style.backgroundColor = 'var(--accent-soft)'; }}
+                          onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.backgroundColor = 'transparent'; }}
+                          title="Rename Document"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={e => { e.stopPropagation(); deleteDocMutation.mutate(doc.id); }}
+                          className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg transition-all"
+                          style={{ color: 'var(--text-muted)' }}
+                          onMouseEnter={e => { e.currentTarget.style.color = 'var(--danger)'; e.currentTarget.style.backgroundColor = '#FEE2E2'; }}
+                          onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.backgroundColor = 'transparent'; }}
+                          title="Delete Document"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </div>
 
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between pt-2 border-t" style={{ borderColor: 'var(--border)' }}>
                       <Badge variant={doc.type === 'PDF' ? 'green' : 'default'}>{doc.type}</Badge>
-                      <span className="text-[12px] flex items-center gap-1" style={{ color: 'var(--text-muted)' }}>
-                        <Clock className="w-3 h-3" />
-                        {new Date(doc.updatedAt || doc.createdAt).toLocaleDateString()}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={e => { e.stopPropagation(); setPreviewDoc(doc); }}
+                          className="flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-lg border transition-colors hover:bg-emerald-50 dark:hover:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400"
+                          style={{ borderColor: 'var(--border)' }}
+                          title="Quick Preview"
+                        >
+                          <Eye className="w-3 h-3" />
+                          Preview
+                        </button>
+                        <span className="text-[12px] flex items-center gap-1" style={{ color: 'var(--text-muted)' }}>
+                          <Clock className="w-3 h-3" />
+                          {new Date(doc.updatedAt || doc.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -268,7 +376,7 @@ export default function DashboardPage() {
                 <table className="w-full text-left">
                   <thead style={{ backgroundColor: 'var(--surface-2)' }}>
                     <tr>
-                      {['Title', 'Format', 'Status', 'Modified', ''].map(h => (
+                      {['Title', 'Format', 'Status', 'Modified', 'Actions'].map(h => (
                         <th key={h} className="px-5 py-3 text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)', borderBottom: `1px solid var(--border)` }}>
                           {h}
                         </th>
@@ -285,19 +393,50 @@ export default function DashboardPage() {
                         onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--surface-2)'}
                         onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
                       >
-                        <td className="px-5 py-3.5 text-[14px] font-medium" style={{ color: 'var(--text-primary)' }}>{doc.title}</td>
+                        <td className="px-5 py-3.5 text-[14px] font-medium" style={{ color: 'var(--text-primary)' }}>
+                          {editingDocId === doc.id ? (
+                            <input
+                              type="text"
+                              autoFocus
+                              value={editingTitle}
+                              onClick={e => e.stopPropagation()}
+                              onChange={e => setEditingTitle(e.target.value)}
+                              onBlur={() => handleSaveTitleEdit(doc.id)}
+                              onKeyDown={e => handleTitleKeyDown(e, doc.id)}
+                              className="text-[13px] font-semibold px-2 py-1 rounded-lg border outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                              style={{ borderColor: 'var(--primary)' }}
+                            />
+                          ) : (
+                            doc.title
+                          )}
+                        </td>
                         <td className="px-5 py-3.5"><Badge variant="green">{doc.type}</Badge></td>
                         <td className="px-5 py-3.5 text-[13px] font-medium" style={{ color: 'var(--text-secondary)' }}>{doc.status}</td>
                         <td className="px-5 py-3.5 text-[13px]" style={{ color: 'var(--text-muted)' }}>
                           {new Date(doc.updatedAt || doc.createdAt).toLocaleDateString()}
                         </td>
-                        <td className="px-5 py-3.5 text-right">
+                        <td className="px-5 py-3.5 text-right flex items-center justify-end gap-2">
+                          <button
+                            onClick={e => handleStartTitleEdit(e, doc)}
+                            className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
+                            title="Rename Document"
+                          >
+                            <Edit3 className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={e => { e.stopPropagation(); setPreviewDoc(doc); }}
+                            className="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30"
+                            title="Quick Preview"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
                           <button
                             onClick={e => { e.stopPropagation(); deleteDocMutation.mutate(doc.id); }}
                             className="p-1.5 rounded-lg"
                             style={{ color: 'var(--text-muted)' }}
                             onMouseEnter={e => { e.currentTarget.style.color = 'var(--danger)'; e.currentTarget.style.backgroundColor = '#FEE2E2'; }}
                             onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.backgroundColor = 'transparent'; }}
+                            title="Delete Document"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -361,6 +500,13 @@ export default function DashboardPage() {
 
         </div>
       </div>
+
+      {/* Document Quick Preview Modal */}
+      <DocumentPreviewModal
+        doc={previewDoc}
+        isOpen={Boolean(previewDoc)}
+        onClose={() => setPreviewDoc(null)}
+      />
 
       {/* New Folder Modal */}
       {isFolderModalOpen && (

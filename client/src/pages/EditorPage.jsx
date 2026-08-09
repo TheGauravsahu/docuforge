@@ -46,10 +46,34 @@ export default function EditorPage() {
   });
 
   useEffect(() => {
+    if (!docId) return;
+
+    // Check for local session backup first
+    const backupKey = `docuforge_unsaved_doc_${docId}`;
+    const rawBackup = localStorage.getItem(backupKey);
+    if (rawBackup) {
+      try {
+        const backupDoc = JSON.parse(rawBackup);
+        if (backupDoc && backupDoc.id === docId) {
+          setDocument(backupDoc);
+          localStorage.removeItem(backupKey);
+          toast.success('Restored unsaved document changes from session backup!');
+          // Immediately sync restored doc to database
+          api.put(`/documents/${docId}`, {
+            title: backupDoc.title,
+            contentJson: backupDoc.contentJson,
+          }).catch(err => console.error('[RestoreSync Error]', err));
+          return;
+        }
+      } catch (e) {
+        console.error('[Session Restore Error]', e);
+      }
+    }
+
     if (docData && (!document || document.id !== docData.id)) {
       setDocument(docData);
     }
-  }, [docData]);
+  }, [docData, docId]);
 
   // Debounced auto-save effect
   useEffect(() => {

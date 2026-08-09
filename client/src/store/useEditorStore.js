@@ -24,6 +24,15 @@ export const useEditorStore = create(
         });
       },
 
+      updateDocumentTitle: (newTitle) => {
+        const doc = get().document;
+        if (!doc) return;
+        set({
+          document: { ...doc, title: newTitle },
+          isDirty: true,
+        });
+      },
+
       markSaved: () => set({ isDirty: false }),
 
       setActivePage: (index) => {

@@ -12,6 +12,8 @@ import SettingsPage from './pages/SettingsPage.jsx';
 import AdminPage from './pages/AdminPage.jsx';
 import AuthPage from './pages/AuthPage.jsx';
 import SharedViewPage from './pages/SharedViewPage.jsx';
+import NotesGeneratorPage from './pages/NotesGeneratorPage.jsx';
+import NotesEditorPage from './pages/NotesEditorPage.jsx';
 import NotFoundPage from './pages/NotFoundPage.jsx';
 
 import ProtectedRoute from './components/layout/ProtectedRoute.jsx';
@@ -51,6 +53,8 @@ export default function App() {
         {/* Protected User Routes */}
         <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
         <Route path="/generate" element={<ProtectedRoute><GeneratePage /></ProtectedRoute>} />
+        <Route path="/notes/new" element={<ProtectedRoute><NotesGeneratorPage /></ProtectedRoute>} />
+        <Route path="/notes/editor/:docId" element={<ProtectedRoute><NotesEditorPage /></ProtectedRoute>} />
         <Route path="/create-manual" element={<ProtectedRoute><CreateManualPage /></ProtectedRoute>} />
         <Route path="/editor/:docId" element={<ProtectedRoute><EditorPage /></ProtectedRoute>} />
         <Route path="/templates" element={<ProtectedRoute><TemplatesPage /></ProtectedRoute>} />

@@ -3,7 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Wand2, LayoutTemplate, Settings, ShieldAlert,
   FolderPlus, Folder, FileText, LogOut, Sun, Moon,
-  Sparkles, PanelLeftClose, PanelLeft, Menu, X
+  Sparkles, PanelLeftClose, PanelLeft, Menu, X, PenTool
 } from 'lucide-react';
 import { useAuthStore } from '../../store/useAuthStore.js';
 import { useTheme } from '../../context/ThemeContext.jsx';
@@ -22,6 +22,7 @@ export default function AppSidebar({ folders = [], onOpenFolderModal }) {
   const navItems = [
     { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
     { label: 'AI Generator', path: '/generate', icon: Wand2 },
+    { label: 'Handwritten Notes', path: '/notes/new', icon: PenTool },
     { label: 'Templates', path: '/templates', icon: LayoutTemplate },
     { label: 'Settings', path: '/settings', icon: Settings },
     ...(isAdmin ? [{ label: 'Admin Console', path: '/admin', icon: ShieldAlert, isAdmin: true }] : []),

@@ -21,7 +21,7 @@ const FORMATS = [
   { val: 'DOCX', label: 'Word Document', desc: 'For editing and collaboration' },
 ];
 
-const CLASSES = ['Class IX', 'Class X', 'Class XI', 'Class XII', 'Graduation'];
+const CLASSES = ['Class IX', 'Class X', 'Class XI', 'Class XII', 'Undergraduate', 'Middle School (Class 6-8)'];
 
 export default function GeneratePage() {
   const navigate = useNavigate();
@@ -48,11 +48,12 @@ export default function GeneratePage() {
       const payload = {
         topic: formData.topic,
         type: formData.outputFormat,
+        targetClass: formData.class,
         placeholders: {
           student_name: formData.studentName || '',
           school_name: formData.school || '',
           roll_number: formData.rollNumber || '',
-          class: formData.class || 'Class XII',
+          class: formData.class || 'Class X',
           subject: formData.subject || '',
           guide_teacher: formData.guideTeacher || 'Teacher-in-Charge',
           academic_year: new Date().getFullYear() + ' - ' + (new Date().getFullYear() + 1),

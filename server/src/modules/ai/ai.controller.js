@@ -14,11 +14,11 @@ const handleAiError = (res, error) => {
 
 export const writeSection = async (req, res) => {
   try {
-    const { title, topic } = req.body;
+    const { title, topic, targetClass } = req.body;
     if (!title) {
       return res.status(400).json({ error: 'Section title is required' });
     }
-    const section = await generateSectionService({ title, topic });
+    const section = await generateSectionService({ title, topic, targetClass });
     res.json({ section });
   } catch (error) {
     handleAiError(res, error);
@@ -27,12 +27,12 @@ export const writeSection = async (req, res) => {
 
 export const generateOutline = async (req, res) => {
   try {
-    const { topic, docType, referenceText } = req.body;
+    const { topic, docType, referenceText, targetClass } = req.body;
     if (!topic) {
       return res.status(400).json({ error: 'Topic is required' });
     }
 
-    const outline = await generateOutlineService({ topic, docType, referenceText });
+    const outline = await generateOutlineService({ topic, docType, referenceText, targetClass });
     res.json({ outline });
   } catch (error) {
     handleAiError(res, error);
@@ -41,7 +41,7 @@ export const generateOutline = async (req, res) => {
 
 export const generateFullDocument = async (req, res) => {
   try {
-    const { topic, type = 'PDF', folderId, templateId, placeholders, outline } = req.body;
+    const { topic, type = 'PDF', folderId, templateId, placeholders, outline, targetClass } = req.body;
     if (!topic) {
       return res.status(400).json({ error: 'Topic is required' });
     }
@@ -51,7 +51,8 @@ export const generateFullDocument = async (req, res) => {
       docType: type,
       templateId,
       placeholders,
-      outline
+      outline,
+      targetClass: targetClass || placeholders?.class
     });
 
     let ownerId = req.user?.id;
@@ -81,7 +82,7 @@ export const generateFullDocument = async (req, res) => {
         id: `log_${Date.now()}`,
         userId: req.user.id,
         action: 'AI_GENERATION',
-        metadata: { topic, docId: newDoc.id, type },
+        metadata: { topic, docId: newDoc.id, type, targetClass: targetClass || placeholders?.class },
         createdAt: new Date(),
       }).catch(() => {});
     }

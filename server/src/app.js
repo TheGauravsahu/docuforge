@@ -12,6 +12,7 @@ import templateRoutes from './modules/templates/templates.routes.js';
 import aiRoutes from './modules/ai/ai.routes.js';
 import exportRoutes from './modules/exports/exports.routes.js';
 import adminRoutes from './modules/admin/admin.routes.js';
+import notesRoutes from './modules/notes/notes.routes.js';
 
 const app = express();
 
@@ -51,6 +52,7 @@ app.use('/api/templates', templateRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/documents', exportRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/notes', notesRoutes);
 
 // Central Error Handler
 app.use(errorHandler);

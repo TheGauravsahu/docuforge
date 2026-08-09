@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, Undo2, Redo2, Type, Download, Share2,
-  Save, CheckCircle2, Circle, ZoomIn, ZoomOut, Image as ImageIcon
+  Save, CheckCircle2, Circle, ZoomIn, ZoomOut, Image as ImageIcon, Edit3
 } from 'lucide-react';
 import { useEditorStore } from '../../store/useEditorStore.js';
 import { toast } from 'sonner';
@@ -31,9 +31,32 @@ export default function EditorToolbar({
   const navigate = useNavigate();
   const {
     document, activePageIndex, selectedElementId, undo, redo, addElement,
-    updateElement, updateTheme, isDirty, zoomLevel, setZoom
+    updateElement, updateTheme, updateDocumentTitle, isDirty, zoomLevel, setZoom
   } = useEditorStore();
   const [isSaving, setIsSaving] = useState(false);
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [titleInput, setTitleInput] = useState('');
+
+  const handleStartTitleEdit = () => {
+    setTitleInput(document?.title || 'Untitled Document');
+    setIsEditingTitle(true);
+  };
+
+  const handleSaveTitleEdit = () => {
+    if (titleInput.trim() && titleInput.trim() !== document?.title) {
+      updateDocumentTitle(titleInput.trim());
+      toast.success('Document title updated');
+    }
+    setIsEditingTitle(false);
+  };
+
+  const handleTitleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      handleSaveTitleEdit();
+    } else if (e.key === 'Escape') {
+      setIsEditingTitle(false);
+    }
+  };
 
   const theme = document?.contentJson?.theme || {};
   const activePage = document?.contentJson?.pages?.[activePageIndex];
@@ -110,12 +133,28 @@ export default function EditorToolbar({
         <div className="w-px h-5 hidden sm:block" style={{ backgroundColor: 'var(--border)' }} />
 
         <div className="flex items-center gap-1.5">
-          <span
-            className="text-[13px] sm:text-[14px] font-semibold truncate max-w-[110px] sm:max-w-[180px]"
-            style={{ color: 'var(--text-primary)' }}
-          >
-            {document?.title || 'Untitled Document'}
-          </span>
+          {isEditingTitle ? (
+            <input
+              type="text"
+              autoFocus
+              value={titleInput}
+              onChange={e => setTitleInput(e.target.value)}
+              onBlur={handleSaveTitleEdit}
+              onKeyDown={handleTitleKeyDown}
+              className="text-[13px] font-semibold px-2 py-0.5 rounded-lg border outline-none max-w-[180px] sm:max-w-[260px] bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+              style={{ borderColor: 'var(--primary)' }}
+            />
+          ) : (
+            <button
+              onClick={handleStartTitleEdit}
+              className="group flex items-center gap-1 text-[13px] sm:text-[14px] font-semibold hover:bg-gray-100 dark:hover:bg-gray-800 px-2 py-1 rounded-lg transition-colors max-w-[140px] sm:max-w-[220px]"
+              style={{ color: 'var(--text-primary)' }}
+              title="Click to rename document"
+            >
+              <span className="truncate">{document?.title || 'Untitled Document'}</span>
+              <Edit3 className="w-3 h-3 opacity-0 group-hover:opacity-100 text-gray-400 transition-opacity flex-shrink-0" />
+            </button>
+          )}
 
           {/* Save status pill */}
           <span

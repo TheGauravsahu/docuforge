@@ -14,6 +14,7 @@ export default function AiGeneratorModal({ isOpen, onClose }) {
   const [referenceText, setReferenceText] = useState('');
   const [docType, setDocType] = useState('PDF');
   const [templateId, setTemplateId] = useState('tpl_physics_proj');
+  const [targetClass, setTargetClass] = useState('Class X');
   const [isGenerating, setIsGenerating] = useState(false);
   const [outline, setOutline] = useState(null);
 
@@ -25,7 +26,7 @@ export default function AiGeneratorModal({ isOpen, onClose }) {
 
     setIsGenerating(true);
     try {
-      const res = await api.post('/ai/outline', { topic, docType, referenceText });
+      const res = await api.post('/ai/outline', { topic, docType, referenceText, targetClass });
       setOutline(res.data.outline);
       setIsGenerating(false);
       setStep(2);
@@ -48,7 +49,9 @@ export default function AiGeneratorModal({ isOpen, onClose }) {
         topic,
         type: docType,
         templateId,
-        outline
+        outline,
+        targetClass,
+        placeholders: { class: targetClass }
       });
 
       const doc = res.data.document;
@@ -158,7 +161,26 @@ export default function AiGeneratorModal({ isOpen, onClose }) {
               />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-[13px] font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
+                  Target Grade Level *
+                </label>
+                <select
+                  value={targetClass}
+                  onChange={(e) => setTargetClass(e.target.value)}
+                  className="w-full text-[13px] px-3.5 py-2.5 rounded-xl border outline-none font-medium"
+                  style={{ backgroundColor: 'var(--surface-2)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
+                >
+                  <option value="Class IX">Class IX (Simple / 9th Grade)</option>
+                  <option value="Class X">Class X (Secondary / 10th Grade)</option>
+                  <option value="Class XI">Class XI (Senior High / 11th Grade)</option>
+                  <option value="Class XII">Class XII (Senior High / 12th Grade)</option>
+                  <option value="Undergraduate">Undergraduate / College</option>
+                  <option value="Middle School">Middle School (Class 6th-8th)</option>
+                </select>
+              </div>
+
               <div>
                 <label className="block text-[13px] font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
                   Document Preset Template

@@ -12,3 +12,4 @@ export const documentVersions = schema.documentVersions;
 export const documentExports = schema.documentExports;
 export const templates = schema.templates;
 export const usageLogs = schema.usageLogs;
+export const noteAssets = schema.noteAssets;

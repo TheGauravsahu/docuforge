@@ -12,6 +12,13 @@ export default function AuthPage() {
   const [formData, setFormData] = useState({ name: '', email: '', password: '' });
   const [errorMsg, setErrorMsg] = useState('');
 
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('session_expired')) {
+      toast.error('Session expired. Please log in to resume your work.');
+    }
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg('');
@@ -24,8 +31,15 @@ export default function AuthPage() {
     }
 
     if (res.success) {
-      toast.success(isRegister ? 'Account created! Welcome to DocuForge.' : 'Welcome back!');
-      navigate('/dashboard');
+      const pendingDocId = localStorage.getItem('docuforge_pending_redirect_doc_id');
+      if (pendingDocId) {
+        localStorage.removeItem('docuforge_pending_redirect_doc_id');
+        toast.success('Welcome back! Resuming your document work...');
+        navigate(`/editor/${pendingDocId}`);
+      } else {
+        toast.success(isRegister ? 'Account created! Welcome to DocuForge.' : 'Welcome back!');
+        navigate('/dashboard');
+      }
     } else {
       setErrorMsg(res.error || 'Authentication failed');
     }

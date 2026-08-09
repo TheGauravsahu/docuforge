@@ -9,7 +9,7 @@ import api from '../lib/api.js';
 import { useEditorStore } from '../store/useEditorStore.js';
 import { toast } from 'sonner';
 
-const CATEGORIES = ['All', 'School Project', 'Certificate', 'Report', 'Presentation'];
+const CATEGORIES = ['All', 'School Project', 'Class IX & X', 'Class XI & XII', 'Certificate', 'Report', 'Presentation'];
 
 export default function TemplatesPage() {
   const navigate = useNavigate();
