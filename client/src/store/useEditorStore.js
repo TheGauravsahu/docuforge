@@ -160,17 +160,19 @@ export const useEditorStore = create(
 
         newContentJson.pages.forEach((page) => {
           page.elements.forEach((el) => {
-            if (oldP.school_name && el.content.includes(oldP.school_name)) {
-              el.content = el.content.split(oldP.school_name).join(schoolName);
-            }
-            if (oldP.student_name && el.content.includes(oldP.student_name)) {
-              el.content = el.content.split(oldP.student_name).join(studentName);
-            }
-            if (oldP.roll_number && el.content.includes(oldP.roll_number)) {
-              el.content = el.content.split(oldP.roll_number).join(rollNumber);
-            }
-            if (oldP.guide_teacher && el.content.includes(oldP.guide_teacher)) {
-              el.content = el.content.split(oldP.guide_teacher).join(guideTeacher);
+            if (el.content && typeof el.content === 'string') {
+              if (oldP.school_name && el.content.includes(oldP.school_name)) {
+                el.content = el.content.split(oldP.school_name).join(schoolName);
+              }
+              if (oldP.student_name && el.content.includes(oldP.student_name)) {
+                el.content = el.content.split(oldP.student_name).join(studentName);
+              }
+              if (oldP.roll_number && el.content.includes(oldP.roll_number)) {
+                el.content = el.content.split(oldP.roll_number).join(rollNumber);
+              }
+              if (oldP.guide_teacher && el.content.includes(oldP.guide_teacher)) {
+                el.content = el.content.split(oldP.guide_teacher).join(guideTeacher);
+              }
             }
 
             if (page.type === 'cover') {
